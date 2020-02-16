@@ -10,8 +10,8 @@ import Index from "views/Index.js";
 ReactDOM.render(
   <BrowserRouter>
     <Switch>
-      <Route path="/index" render={props => <Index {...props} />} />
-        <Redirect to="/index" />
+      <Route path="/" render={props => <Index {...props} />} />
+      <Redirect to="/" />
     </Switch>
   </BrowserRouter>,
   document.getElementById("root")
