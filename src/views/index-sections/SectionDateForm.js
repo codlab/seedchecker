@@ -24,7 +24,7 @@ class SectionButtons extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {results:[], infinityMode: false, squareOnly: false};
+    this.state = {results:[], infinityMode: true, squareOnly: false};
   }
 
   setSeed(seed) {
@@ -64,7 +64,7 @@ class SectionButtons extends Component {
       const pokemon = new PokemonFrame(seed, 0);
       const results = [];
   
-      const limit = squareOnly ? 5 : 50;
+      const limit = squareOnly ? 5 : 10;
   
       while((infinityMode && results.length < limit) || (!infinityMode && results.length == 0)) {
         pokemon.advanceFrame(1);
@@ -179,7 +179,7 @@ class SectionButtons extends Component {
                         <label>
                           <Switch
                             onChange={(e, isOn) => this.toInfinity(isOn)}
-                            defaultValue={false}
+                            defaultValue={true}
                             onColor="primary"
                             offColor="primary"
                           />
