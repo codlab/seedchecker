@@ -5,6 +5,7 @@ import classnames from "classnames";
 
 import PokemonFrame, {SHINY} from "libseedchecker";
 import moment from "moment";
+import Websocket from 'react-websocket';
 
 import {
   Button,
@@ -21,6 +22,7 @@ import {
   Col
 } from "reactstrap";
 import DarkMode from "components/DarkMode";
+import DuduMode from "components/Dudu";
 
 const SHINY_TYPE = ["-", "☆", "◇"];
 
@@ -30,6 +32,8 @@ class SectionButtons extends Component {
     super(props);
     const isOn = DarkMode.instance.state;
     this.state = {
+      isDuduMode: DuduMode.instance.isDuduMode(),
+      dudus: [],
       darkMode: isOn ? "section-dark" : "",
       results:[],
       infinityMode: true,
@@ -137,17 +141,26 @@ class SectionButtons extends Component {
 
   componentDidMount() {
     DarkMode.instance.addListener("dark_mode", this.onDarkMode);
+    DuduMode.instance.addListener("dudu", this.onDuduMode);
+    DuduMode.instance.addListener("dudu_list", this.onDudus);
   }
 
   componentWillUnmount() {
     DarkMode.instance.removeListener("dark_mode", this.onDarkMode);
+    DuduMode.instance.removeListener("dudu", this.onDuduMode);
+    DuduMode.instance.removeListener("dudu_list", this.onDudus);
   }
 
   onDarkMode = (isOn) => this.setState({darkMode: isOn ? "section-dark" : ""});
+  onDuduMode = (isOn) => this.setState({isDuduMode: isOn });
+  onDudus = (dudus) => this.setState({dudus});
+
+  onDuduMessage = (data) => DuduMode.instance.onMessage(data);
 
   render() {
-    const {darkMode, results, error, progressStep, progressLimit} = this.state;
+    const {dudus, isDuduMode, darkMode, results, error, progressStep, progressLimit} = this.state;
     const showModal = error && error.length > 0;
+
     console.log("footer", showModal);
     return (
       <>
@@ -321,20 +334,87 @@ class SectionButtons extends Component {
                 </Row>
               </Col>
 
+              {
+                isDuduMode &&
+                (<>
+                <Col sm="12" md="6" lg="6">
+                  <div id="buttons">
+                    <div className="title">
+                      <h3>
+                        Dudu's real time <br />
+                      </h3>
+                    </div>
+                  </div>
+                  <Row  sm="12" md="12" lg="12">
+                    <Col sm="12" md="12" lg="12">
+                      <Table striped bordered hover>
+                        <thead>
+                          <tr>
+                            <th>OT</th>
+                            <th>Pokémon</th>
+                            <th>Seed</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        {
+                          dudus.map((dudu, index) => {
+
+                            return (<tr>
+                              <td className="colorable">
+                                {dudu.trainer}
+                              </td>
+                              <td className="colorable">
+                                {dudu.pokemon}
+                              </td>
+                              <td className="colorable">
+                                {dudu.seed}
+                              </td>
+                            </tr>);
+                          })
+                        }
+                        </tbody>
+                      </Table>
+                    </Col>
+                  </Row>
+                </Col>
+                <Websocket url='ws://116.202.105.91:8080/'
+                    onMessage={data => this.onDuduMessage(data)}/>
+                </>)
+              }
+
               <Col sm="6" md="4" lg="4">
-                <div id="others">
-                  <p>
-                    <span className="note">Dark Mode</span>
-                  </p>
-                  <label>
-                    <Switch
-                      onChange={(e, isOn) => DarkMode.instance.setDarkMode(isOn)}
-                      defaultValue={darkMode}
-                      onColor="primary"
-                      offColor="primary"
-                    />
-                  </label>
-                </div>
+                <Row>
+                  <Col>
+                    <div id="others">
+                      <p>
+                        <span className="note">Dark Mode</span>
+                      </p>
+                      <label>
+                        <Switch
+                          onChange={(e, isOn) => DarkMode.instance.setDarkMode(isOn)}
+                          defaultValue={darkMode}
+                          onColor="primary"
+                          offColor="primary"
+                        />
+                      </label>
+                    </div>
+                  </Col>
+                  <Col>
+                    <div id="others">
+                      <p>
+                        <span className="note">Dudu</span>
+                      </p>
+                      <label>
+                        <Switch
+                          onChange={(e, isOn) => DuduMode.instance.setDuduMode(isOn)}
+                          defaultValue={isDuduMode}
+                          onColor="primary"
+                          offColor="primary"
+                        />
+                      </label>
+                    </div>
+                  </Col>
+                </Row>
               </Col>
             </Row>
           </Container>
