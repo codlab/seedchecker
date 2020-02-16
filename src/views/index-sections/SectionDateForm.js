@@ -4,6 +4,7 @@ import ReactDatetime from "react-datetime";
 import classnames from "classnames";
 
 import PokemonFrame, {SHINY} from "libseedchecker";
+import moment from "moment";
 
 import {
   Button,
@@ -11,6 +12,7 @@ import {
   Input,
   InputGroupAddon,
   InputGroupText,
+  Progress,
   InputGroup,
   Container,
   Table,
@@ -27,7 +29,14 @@ class SectionButtons extends Component {
   constructor(props) {
     super(props);
     const isOn = DarkMode.instance.state;
-    this.state = {darkMode: isOn ? "section-dark" : "", results:[], infinityMode: true, squareOnly: false};
+    this.state = {
+      darkMode: isOn ? "section-dark" : "",
+      results:[],
+      infinityMode: true,
+      squareOnly: false,
+      progressLimit: 0,
+      progressStep: 0
+    };
   }
 
   setSeed(seed) {
@@ -72,22 +81,44 @@ class SectionButtons extends Component {
   calculate() {
     const { seed, infinityMode, squareOnly, switchDate } = this.state;
     try {
+      const timestamp = moment().valueOf();
+      this.new_calculus = timestamp;
       const pokemon = new PokemonFrame(this.asSeed(seed), 0);
       const results = [];
   
-      const limit = squareOnly ? 5 : 10;
-  
-      while((infinityMode && results.length < limit) || (!infinityMode && results.length == 0)) {
-        pokemon.advanceFrame(1);
-        const result = pokemon.getShinyState();
-        var valid = result.shiny != SHINY.NONE;
-        if(squareOnly) valid = valid && result.shiny == SHINY.SQUARE;
-  
-        valid && results.push(result);
+      const limit = infinityMode ? (squareOnly ? 5 : 10) : 1;
+
+      const canceled = () => this.new_calculus != timestamp;
+      const done = () => (infinityMode && results.length >= limit) || (!infinityMode && results.length > 0);
+
+      const step = (remaining_steps) => {
+        const current_found = results.length;
+        while(!canceled() && remaining_steps > 0 && !done()) {
+          pokemon.advanceFrame(1);
+          const result = pokemon.getShinyState();
+          var valid = result.shiny != SHINY.NONE;
+          if(squareOnly) valid = valid && result.shiny == SHINY.SQUARE;
+    
+          valid && results.push(result);
+          remaining_steps --;
+        }
+
+        if(canceled()) {
+          console.log("canceled");
+        } else if(done()) {
+          this.setState({progressLimit: limit, progressStep: results.length, results, calculatedDate: switchDate ? switchDate.clone(): undefined});
+        } else {
+          if(results.length != current_found) {
+            this.setState({progressLimit: limit, progressStep: results.length});
+          }
+          setTimeout(() => step(50), 1);
+        }
       }
-  
-      this.setState({results, calculatedDate: switchDate.clone()});
+
+      this.setState({progressLimit: limit, progressStep: 0, results, calculatedDate: switchDate ? switchDate.clone(): undefined});
+      step(50);
     } catch(e) {
+      console.error(e);
       this.setState({error: "Error while calculating the Pokémon info", results: [], calculatedDate: undefined});
     }
   }
@@ -115,7 +146,7 @@ class SectionButtons extends Component {
   onDarkMode = (isOn) => this.setState({darkMode: isOn ? "section-dark" : ""});
 
   render() {
-    const {darkMode, results, error} = this.state;
+    const {darkMode, results, error, progressStep, progressLimit} = this.state;
     const showModal = error && error.length > 0;
     console.log("footer", showModal);
     return (
@@ -239,6 +270,15 @@ class SectionButtons extends Component {
                     </h3>
                   </div>
                 </div>
+                <Row>
+                  <Col>
+                    <Progress
+                      max={progressLimit}
+                      value={progressStep}
+                      barClassName="progress-bar-success"
+                    />
+                  </Col>
+                </Row>
                 <Row  sm="12" md="12" lg="12">
                   <Col sm="12" md="12" lg="12">
                     {
