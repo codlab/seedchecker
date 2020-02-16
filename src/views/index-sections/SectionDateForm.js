@@ -45,9 +45,10 @@ class SectionButtons extends Component {
   toDateFrame(frame) {
     const { calculatedDate } = this.state;
     if(calculatedDate) {
-      const added = calculatedDate.add(frame, "days");
+      var date = calculatedDate.clone();
+      date = date.add(frame, "days");
 
-      return added.format("DD/MM/YYYY");
+      return date.format("DD/MM/YYYY");
     }
     return "";
   }
@@ -85,7 +86,7 @@ class SectionButtons extends Component {
         valid && results.push(result);
       }
   
-      this.setState({results, calculatedDate: switchDate});
+      this.setState({results, calculatedDate: switchDate.clone()});
     } catch(e) {
       this.setState({error: "Error while calculating the Pokémon info", results: [], calculatedDate: undefined});
     }
