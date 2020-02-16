@@ -13,9 +13,14 @@ import {
 } from "reactstrap";
 import DarkMode from "components/DarkMode";
 
+const DARK = [];
+DARK[true] = "navbar-dark";
+DARK[false] = "";
+
 function ExamplesNavbar() {
+  const currentDarkMode = !!DarkMode.instance.state;
   const [navbarColor, setNavbarColor] = React.useState("");
-  const [darkMode, setDarkMode] = React.useState("");
+  const [darkMode, setDarkMode] = React.useState(DARK[currentDarkMode]);
   const [navbarCollapse, setNavbarCollapse] = React.useState(false);
 
   const toggleNavbarCollapse = () => {
@@ -26,9 +31,9 @@ function ExamplesNavbar() {
   React.useEffect(() => {
     const changeDarkMode = (state) => {
       if (state) {
-        setDarkMode("navbar-dark");
+        setDarkMode(DARK[true]);
       } else {
-        setDarkMode("");
+        setDarkMode(DARK[false]);
       }
     };
 

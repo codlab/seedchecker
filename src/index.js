@@ -8,10 +8,13 @@ import "assets/demo/demo.css";
 import Index from "views/Index.js";
 import DarkMode from "components/DarkMode";
 
-DarkMode.instance.addListener("dark_mode", (isOn) => {
+const darkMode = (isOn) => {
   const color = isOn ? "#0b1011" : "white";
   document.getElementsByTagName("body")[0].style.backgroundColor = color;
-});
+}
+
+DarkMode.instance.addListener("dark_mode", darkMode);
+darkMode(DarkMode.instance.state);
 
 ReactDOM.render(
   <BrowserRouter>

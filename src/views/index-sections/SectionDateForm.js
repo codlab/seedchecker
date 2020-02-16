@@ -26,7 +26,8 @@ class SectionButtons extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {darkMode: "", results:[], infinityMode: true, squareOnly: false};
+    const isOn = DarkMode.instance.state;
+    this.state = {darkMode: isOn ? "section-dark" : "", results:[], infinityMode: true, squareOnly: false};
   }
 
   setSeed(seed) {
@@ -287,7 +288,7 @@ class SectionButtons extends Component {
                   <label>
                     <Switch
                       onChange={(e, isOn) => DarkMode.instance.setDarkMode(isOn)}
-                      defaultValue={false}
+                      defaultValue={darkMode}
                       onColor="primary"
                       offColor="primary"
                     />
