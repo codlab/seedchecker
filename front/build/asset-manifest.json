@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/static/css/main.11bba1e5.chunk.css",
+    "main.js": "/static/js/main.f140d6a4.chunk.js",
+    "main.js.map": "/static/js/main.f140d6a4.chunk.js.map",
+    "runtime~main.js": "/static/js/runtime~main.a8a9905a.js",
+    "runtime~main.js.map": "/static/js/runtime~main.a8a9905a.js.map",
+    "static/js/2.66cde5c9.chunk.js": "/static/js/2.66cde5c9.chunk.js",
+    "static/js/2.66cde5c9.chunk.js.map": "/static/js/2.66cde5c9.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.e23cf62b1db08ce418b4b39f5889d62d.js": "/precache-manifest.e23cf62b1db08ce418b4b39f5889d62d.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/main.11bba1e5.chunk.css.map": "/static/css/main.11bba1e5.chunk.css.map",
+    "static/media/paper-kit.scss": "/static/media/nucleo-icons.f32ed5ad.eot"
+  }
+}
