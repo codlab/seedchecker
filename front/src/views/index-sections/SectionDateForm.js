@@ -5,7 +5,6 @@ import classnames from "classnames";
 
 import PokemonFrame, {SHINY} from "libseedchecker";
 import moment from "moment";
-import Websocket from 'react-websocket';
 
 import {
   Button,
@@ -154,8 +153,6 @@ class SectionButtons extends Component {
   onDarkMode = (isOn) => this.setState({darkMode: isOn ? "section-dark" : ""});
   onDuduMode = (isOn) => this.setState({isDuduMode: isOn });
   onDudus = (dudus) => this.setState({dudus});
-
-  onDuduMessage = (data) => DuduMode.instance.onMessage(data);
 
   render() {
     const {dudus, isDuduMode, darkMode, results, error, progressStep, progressLimit} = this.state;
@@ -377,8 +374,6 @@ class SectionButtons extends Component {
                     </Col>
                   </Row>
                 </Col>
-                <Websocket url='ws://116.202.105.91:8080/'
-                    onMessage={data => this.onDuduMessage(data)}/>
                 </>)
               }
 
