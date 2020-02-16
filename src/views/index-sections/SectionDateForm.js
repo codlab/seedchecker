@@ -58,10 +58,17 @@ class SectionButtons extends Component {
     this.setState({squareOnly});
   }
 
+  asSeed(seed) {
+    if(seed && seed.indexOf("0x") == 0) {
+      return seed.replace("0x", "");
+    }
+    return seed;
+  }
+
   calculate() {
     const { seed, infinityMode, squareOnly, switchDate } = this.state;
     try {
-      const pokemon = new PokemonFrame(seed, 0);
+      const pokemon = new PokemonFrame(this.asSeed(seed), 0);
       const results = [];
   
       const limit = squareOnly ? 5 : 10;
