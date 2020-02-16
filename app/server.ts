@@ -26,7 +26,7 @@ export default class ApiServer {
   
     this.app
     .use(cors())
-    .use(express.static(path.join(__dirname, '../front/public')))
+    .use(express.static(path.join(__dirname, '../front/build')))
     .use(body_parser.json())
   
     const { key, cert, ca } = config;
