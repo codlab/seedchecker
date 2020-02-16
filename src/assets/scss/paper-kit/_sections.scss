@@ -31,6 +31,9 @@
 .section-dark{
     background-color: #0b1011;
 }
+html, body, #root, #root>div {
+    height: 100%
+}
 .section-image,
 .section-gold,
 .section-dark{
@@ -41,12 +44,27 @@
     .card-plain .card-title{
         color: $white-color !important;
     }
+    .rdtPicker {
+        background-color: #506367;
+    }
+    
+    .rdtSwitch {
+        color: #b6f9fb;
+    }
+    .colorable,
+    .rdtDay, //date in picker
+    table,
+    .note,
     .category,
     .description,
     .card-plain .card-description,
     .card-plain .card-category{
         color: rgba($white-color, .7);
     }
+    .colorable {
+        font-weight: bold;
+    }
+
     hr{
         border-color: rgba(255, 255, 255, 0.19);
     }

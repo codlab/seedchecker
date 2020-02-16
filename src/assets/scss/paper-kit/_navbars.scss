@@ -277,3 +277,29 @@
     }
   }
 }
+
+
+.navbar-dark {
+  background-color: #0b1011;
+  box-shadow: 0 6px 10px -4px rgba(255, 232, 232, 0.15) !important;
+
+  .navbar-brand{
+    color: $white-color !important;
+    @include opacity(.9);
+
+    &:focus,
+    &:hover{
+        background-color: transparent;
+        @include opacity(1);
+        color: $white-color !important;
+    }
+  }
+
+  .navbar-toggler {
+    border-color: transparent;
+  }
+  
+  .navbar-toggler-bar {
+    background: $white-color !important;
+  }
+}

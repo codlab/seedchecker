@@ -11,15 +11,33 @@ import {
   Nav,
   Container
 } from "reactstrap";
+import DarkMode from "components/DarkMode";
 
 function ExamplesNavbar() {
   const [navbarColor, setNavbarColor] = React.useState("");
+  const [darkMode, setDarkMode] = React.useState("");
   const [navbarCollapse, setNavbarCollapse] = React.useState(false);
 
   const toggleNavbarCollapse = () => {
     setNavbarCollapse(!navbarCollapse);
     document.documentElement.classList.toggle("nav-open");
   };
+
+  React.useEffect(() => {
+    const changeDarkMode = (state) => {
+      if (state) {
+        setDarkMode("navbar-dark");
+      } else {
+        setDarkMode("");
+      }
+    };
+
+    DarkMode.instance.addListener("dark_mode", changeDarkMode);
+
+    return function cleanup() {
+      DarkMode.instance.removeListener("dark_mode", changeDarkMode);
+    };
+  });
 
   React.useEffect(() => {
     const updateNavbarColor = () => {
@@ -44,7 +62,7 @@ function ExamplesNavbar() {
   });
   return (
     <Navbar
-      className={classnames("fixed-top", navbarColor)}
+      className={classnames("fixed-top", navbarColor, darkMode)}
       color-on-scroll="300"
       expand="lg"
     >

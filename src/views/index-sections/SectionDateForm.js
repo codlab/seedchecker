@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Switch from "react-bootstrap-switch";
 import ReactDatetime from "react-datetime";
+import classnames from "classnames";
 
 import PokemonFrame, {SHINY} from "libseedchecker";
 
@@ -17,6 +18,7 @@ import {
   Row,
   Col
 } from "reactstrap";
+import DarkMode from "components/DarkMode";
 
 const SHINY_TYPE = ["-", "☆", "◇"];
 
@@ -24,7 +26,7 @@ class SectionButtons extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {results:[], infinityMode: true, squareOnly: false};
+    this.state = {darkMode: "", results:[], infinityMode: true, squareOnly: false};
   }
 
   setSeed(seed) {
@@ -100,8 +102,18 @@ class SectionButtons extends Component {
     this.setState({error: undefined});
   }
 
+  componentDidMount() {
+    DarkMode.instance.addListener("dark_mode", this.onDarkMode);
+  }
+
+  componentWillUnmount() {
+    DarkMode.instance.removeListener("dark_mode", this.onDarkMode);
+  }
+
+  onDarkMode = (isOn) => this.setState({darkMode: isOn ? "section-dark" : ""});
+
   render() {
-    const {results, error} = this.state;
+    const {darkMode, results, error} = this.state;
     const showModal = error && error.length > 0;
     console.log("footer", showModal);
     return (
@@ -135,7 +147,7 @@ class SectionButtons extends Component {
           </div>
         </Modal>
         
-        <div className="section section-buttons">
+        <div className={classnames("section", "section-buttons", darkMode)}>
           <Container>
             <div className="title">
               <h2>Seed shiny finder</h2>
@@ -178,7 +190,7 @@ class SectionButtons extends Component {
                     </Col>
                   </Row>
                   <Row>
-                    <Col sm="6" md="4" lg="4">
+                    <Col>
                       <div id="switches">
                         <p>
                           <span className="note">Infinity</span>
@@ -193,7 +205,7 @@ class SectionButtons extends Component {
                         </label>
                       </div>
                     </Col>
-                    <Col sm="6" md="4" lg="4">
+                    <Col>
                       <div id="switches">
                         <p>
                           <span className="note">Square</span>
@@ -208,7 +220,7 @@ class SectionButtons extends Component {
                         </label>
                       </div>
                     </Col>
-                    <Col sm="6" md="4" lg="4">
+                    <Col>
                       <Button color="success" type="button" onClick={() => this.calculate()}>
                         GO !
                       </Button>
@@ -245,16 +257,16 @@ class SectionButtons extends Component {
                           console.log(seed);
 
                           return (<tr>
-                            <td>
+                            <td className="colorable">
                               #{frame}
                             </td>
-                            <td>
+                            <td className="colorable">
                               {this.toShiny(result.shiny)}
                             </td>
-                            <td>
+                            <td className="colorable">
                               {seed.toString(16)}
                             </td>
-                            <td>
+                            <td className="colorable">
                               {this.toDateFrame(frame)}
                             </td>
                           </tr>);
@@ -265,6 +277,22 @@ class SectionButtons extends Component {
                     }
                   </Col>
                 </Row>
+              </Col>
+
+              <Col sm="6" md="4" lg="4">
+                <div id="others">
+                  <p>
+                    <span className="note">Dark Mode</span>
+                  </p>
+                  <label>
+                    <Switch
+                      onChange={(e, isOn) => DarkMode.instance.setDarkMode(isOn)}
+                      defaultValue={false}
+                      onColor="primary"
+                      offColor="primary"
+                    />
+                  </label>
+                </div>
               </Col>
             </Row>
           </Container>
