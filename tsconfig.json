@@ -23,6 +23,7 @@
     ],
     "include": [ "app", "app/*" ],
     "exclude": [
+      "front",
       "build",
       "dist",
       "node_modules"
