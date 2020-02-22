@@ -3,7 +3,7 @@ import Switch from "react-bootstrap-switch";
 import ReactDatetime from "react-datetime";
 import classnames from "classnames";
 
-import PokemonFrame, {SHINY} from "libseedchecker";
+import PokemonFrame, {SHINY, OnlineDataProvider} from "libseedchecker";
 import moment from "moment";
 
 import {
@@ -40,6 +40,9 @@ class SectionButtons extends Component {
       progressLimit: 0,
       progressStep: 0
     };
+
+    const t = new OnlineDataProvider();
+    t.load_nests().then(t => console.log(t));
   }
 
   setSeed(seed) {
@@ -192,223 +195,242 @@ class SectionButtons extends Component {
         
         <div className={classnames("section", "section-buttons", darkMode)}>
           <Container>
-            <div className="title">
-              <h2>Seed shiny finder</h2>
-            </div>
             <Row>
-              <Col sm="12" md="6" lg="6">
-              <div id="buttons">
+              <Col sm="8" md="8" lg="8">
                 <div className="title">
-                  <h3>
-                    Configuration <br />
-                  </h3>
-                </div>
-                  <Row>
-                    <Col sm="12" md="12" lg="12">
-                      <FormGroup>
-                        <InputGroup className="date" id="datetimepicker">
-                          <ReactDatetime
-                            onChange={(value) => this.switchDate(value)}
-                            inputProps={{
-                              placeholder: "Select your switch date"
-                            }}
-                          />
-                          <InputGroupAddon addonType="append">
-                            <InputGroupText>
-                              <span className="glyphicon glyphicon-calendar">
-                                <i aria-hidden={true} className="fa fa-calendar" />
-                              </span>
-                            </InputGroupText>
-                          </InputGroupAddon>
-                        </InputGroup>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col sm="12" md="12" lg="12">
-                      <FormGroup>
-                        <Input placeholder="Your Pokémon seed" type="text"
-                          onChange={event => this.setSeed(event.target.value)}/>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <div id="switches">
-                        <p>
-                          <span className="note">Infinity</span>
-                        </p>
-                        <label>
-                          <Switch
-                            onChange={(e, isOn) => this.toInfinity(isOn)}
-                            defaultValue={true}
-                            onColor="primary"
-                            offColor="primary"
-                          />
-                        </label>
-                      </div>
-                    </Col>
-                    <Col>
-                      <div id="switches">
-                        <p>
-                          <span className="note">Square</span>
-                        </p>
-                        <label>
-                          <Switch
-                            onChange={(e, isOn) => this.toSquare(isOn)}
-                            defaultValue={false}
-                            onColor="primary"
-                            offColor="primary"
-                          />
-                        </label>
-                      </div>
-                    </Col>
-                    <Col>
-                      <Button color="success" type="button" onClick={() => this.calculate()}>
-                        GO !
-                      </Button>
-                    </Col>
-                  </Row>
+                  <h2>Seed shiny finder</h2>
                 </div>
               </Col>
-
-              <Col sm="12" md="6" lg="6">
-                <div id="buttons">
-                  <div className="title">
-                    <h3>
-                      Results <br />
-                    </h3>
-                  </div>
-                </div>
-                <Row>
-                  <Col>
-                    <Progress
-                      max={progressLimit}
-                      value={progressStep}
-                      barClassName="progress-bar-success"
+              <Col>
+                <div id="dark_mode">
+                  <p>
+                    <span className="note">Dark Mode</span>
+                  </p>
+                  <label>
+                    <Switch
+                      onChange={(e, isOn) => DarkMode.instance.setDarkMode(isOn)}
+                      defaultValue={darkMode}
+                      onColor="primary"
+                      offColor="primary"
                     />
-                  </Col>
-                </Row>
-                <Row  sm="12" md="12" lg="12">
-                  <Col sm="12" md="12" lg="12">
-                    {
-                      ((results||[]).length > 0) &&
-                      (<Table striped bordered hover>
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Type</th>
-                          <th>Seed</th>
-                          <th>DD/MM/YYYY</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                      {
-                        (results||[]).map((result, index) => {
-                          const { frame, seed } = result.current;
-                          console.log(seed);
-
-                          return (<tr>
-                            <td className="colorable">
-                              #{frame}
-                            </td>
-                            <td className="colorable">
-                              {this.toShiny(result.shiny)}
-                            </td>
-                            <td className="colorable">
-                              {seed.toString(16)}
-                            </td>
-                            <td className="colorable">
-                              {this.toDateFrame(frame)}
-                            </td>
-                          </tr>);
-                        })
-                      }
-                      </tbody>
-                      </Table>)
-                    }
-                  </Col>
-                </Row>
+                  </label>
+                </div>
               </Col>
-
-              {
-                isDuduMode &&
-                (<>
-                <Col sm="12" md="6" lg="6">
+            </Row>
+            <Row>
+              <Col sm="12" md="12" lg="6">
+                <Row>
+                  <Col sm="12" md="12" lg="12">
                   <div id="buttons">
                     <div className="title">
                       <h3>
-                        Dudu's real time <br />
+                        Seed Checker Configuration <br />
                       </h3>
                     </div>
-                  </div>
-                  <Row  sm="12" md="12" lg="12">
-                    <Col sm="12" md="12" lg="12">
-                      <Table striped bordered hover>
-                        <thead>
-                          <tr>
-                            <th>OT</th>
-                            <th>Pokémon</th>
-                            <th>Seed</th>
-                          </tr>
-                        </thead>
-                        <tbody>
+                      <Row>
+                        <Col sm="12" md="12" lg="12">
+                          <FormGroup>
+                            <InputGroup className="date" id="datetimepicker">
+                              <ReactDatetime
+                                onChange={(value) => this.switchDate(value)}
+                                inputProps={{
+                                  placeholder: "Select your switch date"
+                                }}
+                              />
+                              <InputGroupAddon addonType="append">
+                                <InputGroupText>
+                                  <span className="glyphicon glyphicon-calendar">
+                                    <i aria-hidden={true} className="fa fa-calendar" />
+                                  </span>
+                                </InputGroupText>
+                              </InputGroupAddon>
+                            </InputGroup>
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col sm="12" md="12" lg="12">
+                          <FormGroup>
+                            <Input placeholder="Your Pokémon seed" type="text"
+                              onChange={event => this.setSeed(event.target.value)}/>
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col>
+                          <div id="switches">
+                            <p>
+                              <span className="note">Infinity</span>
+                            </p>
+                            <label>
+                              <Switch
+                                onChange={(e, isOn) => this.toInfinity(isOn)}
+                                defaultValue={true}
+                                onColor="primary"
+                                offColor="primary"
+                              />
+                            </label>
+                          </div>
+                        </Col>
+                        <Col>
+                          <div id="switches">
+                            <p>
+                              <span className="note">Square</span>
+                            </p>
+                            <label>
+                              <Switch
+                                onChange={(e, isOn) => this.toSquare(isOn)}
+                                defaultValue={false}
+                                onColor="primary"
+                                offColor="primary"
+                              />
+                            </label>
+                          </div>
+                        </Col>
+                        <Col>
+                          <Button color="success" type="button" onClick={() => this.calculate()}>
+                            GO !
+                          </Button>
+                        </Col>
+                      </Row>
+                    </div>
+                  </Col>
+
+                  <Col sm="12" md="12" lg="12">
+                    <div id="buttons">
+                      <div className="title">
+                        <h3>
+                          Results <br />
+                        </h3>
+                      </div>
+                    </div>
+                    <Row>
+                      <Col>
+                        <Progress
+                          max={progressLimit}
+                          value={progressStep}
+                          barClassName="progress-bar-success"
+                        />
+                      </Col>
+                    </Row>
+                    <Row  sm="12" md="12" lg="12">
+                      <Col sm="12" md="12" lg="12">
                         {
-                          dudus.map((dudu, index) => {
+                          ((results||[]).length > 0) &&
+                          (<Table striped bordered hover>
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Type</th>
+                              <th>Seed</th>
+                              <th>DD/MM/YYYY</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          {
+                            (results||[]).map((result, index) => {
+                              const { frame, seed } = result.current;
+                              console.log(seed);
 
-                            return (<tr>
-                              <td className="colorable">
-                                {dudu.trainer}
-                              </td>
-                              <td className="colorable">
-                                {dudu.pokemon}
-                              </td>
-                              <td className="colorable">
-                                {dudu.seed}
-                              </td>
-                            </tr>);
-                          })
+                              return (<tr>
+                                <td className="colorable">
+                                  #{frame}
+                                </td>
+                                <td className="colorable">
+                                  {this.toShiny(result.shiny)}
+                                </td>
+                                <td className="colorable_small">
+                                  {seed.toString(16)}
+                                </td>
+                                <td className="colorable_small">
+                                  {this.toDateFrame(frame)}
+                                </td>
+                              </tr>);
+                            })
+                          }
+                          </tbody>
+                          </Table>)
                         }
-                        </tbody>
-                      </Table>
-                    </Col>
-                  </Row>
-                </Col>
-                </>)
-              }
+                      </Col>
+                    </Row>
+                  </Col>
+                </Row>
+              </Col>
 
-              <Col sm="6" md="4" lg="4">
+              <Col sm="12" md="6" lg="6">
                 <Row>
-                  <Col>
-                    <div id="others">
-                      <p>
-                        <span className="note">Dark Mode</span>
-                      </p>
-                      <label>
-                        <Switch
-                          onChange={(e, isOn) => DarkMode.instance.setDarkMode(isOn)}
-                          defaultValue={darkMode}
-                          onColor="primary"
-                          offColor="primary"
-                        />
-                      </label>
+                  <Col sm="12" md="12" lg="12">
+                  <div id="buttons">
+                    <div className="title">
+                      <h3>
+                        Dudu's Configuration <br />
+                      </h3>
+                    </div>
+                      <Row>
+                        <Col>
+                          <div id="others">
+                            <p>
+                              <span className="note">Dudu</span>
+                            </p>
+                            <label>
+                              <Switch
+                                onChange={(e, isOn) => DuduMode.instance.setDuduMode(isOn)}
+                                defaultValue={isDuduMode}
+                                onColor="primary"
+                                offColor="primary"
+                              />
+                            </label>
+                          </div>
+                        </Col>
+                      </Row>
                     </div>
                   </Col>
-                  <Col>
-                    <div id="others">
-                      <p>
-                        <span className="note">Dudu</span>
-                      </p>
-                      <label>
-                        <Switch
-                          onChange={(e, isOn) => DuduMode.instance.setDuduMode(isOn)}
-                          defaultValue={isDuduMode}
-                          onColor="primary"
-                          offColor="primary"
-                        />
-                      </label>
-                    </div>
-                  </Col>
+
+                  {
+                    isDuduMode &&
+                    (<>
+                    <Col sm="12" md="6" lg="6">
+                      <div id="buttons">
+                        <div className="title">
+                          <h3>
+                            Dudu's real time <br />
+                          </h3>
+                        </div>
+                      </div>
+                      <Row  sm="12" md="12" lg="12">
+                        <Col sm="12" md="12" lg="12">
+                          <Table striped bordered hover>
+                            <thead>
+                              <tr>
+                                <th>OT</th>
+                                <th>Pokémon</th>
+                                <th>Seed</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                            {
+                              dudus.map((dudu, index) => {
+
+                                return (<tr>
+                                  <td className="colorable">
+                                    {dudu.trainer}
+                                  </td>
+                                  <td className="colorable">
+                                    {dudu.pokemon}
+                                  </td>
+                                  <td className="colorable">
+                                    {dudu.seed}
+                                  </td>
+                                </tr>);
+                              })
+                            }
+                            </tbody>
+                          </Table>
+                        </Col>
+                      </Row>
+                    </Col>
+                    </>)
+                  }
                 </Row>
               </Col>
             </Row>

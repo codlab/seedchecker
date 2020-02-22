@@ -52,6 +52,7 @@ html, body, #root, #root>div {
         color: #b6f9fb;
     }
     .colorable,
+    .colorable_small,
     .rdtDay, //date in picker
     table,
     .note,
@@ -63,6 +64,9 @@ html, body, #root, #root>div {
     }
     .colorable {
         font-weight: bold;
+    }
+    .colorable_small {
+
     }
 
     hr{
