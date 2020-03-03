@@ -3,7 +3,12 @@ import Switch from "react-bootstrap-switch";
 import ReactDatetime from "react-datetime";
 import classnames from "classnames";
 
-import PokemonFrame, {SHINY, OnlineDataProvider} from "libseedchecker";
+import PokemonFrame, {Configs, SHINY, OnlineDataProvider, Game} from "libseedchecker";
+/*
+
+    SWORD = 1,
+    SHIELD = 2
+*/
 import moment from "moment";
 
 import {
@@ -14,6 +19,7 @@ import {
   InputGroupText,
   Progress,
   InputGroup,
+  Label,
   Container,
   Table,
   Modal,
@@ -24,6 +30,18 @@ import DarkMode from "components/DarkMode";
 import DuduMode from "components/Dudu";
 
 const SHINY_TYPE = ["-", "☆", "◇"];
+
+
+const {locations} = Configs.data;
+const { nests, names } = Configs;
+console.log(nests);
+
+const den_names = []; //Map?
+nests.forEach(nest => {
+  const name = locations[nest.location];
+  den_names[nest.normal] = name;
+  den_names[nest.rare] = name;
+});
 
 class SectionButtons extends Component {
 
@@ -38,11 +56,15 @@ class SectionButtons extends Component {
       infinityMode: true,
       squareOnly: false,
       progressLimit: 0,
-      progressStep: 0
+      progressStep: 0,
+      show_extend: false,
+      pokemonIndex: undefined,
+      filter_game: Game.SWORD,
+      found_dens: [],
+      use_den_conf: undefined
     };
 
-    const t = new OnlineDataProvider();
-    t.load_nests().then(t => console.log(t));
+    this.dataProvider = new OnlineDataProvider();
   }
 
   setSeed(seed) {
@@ -129,6 +151,62 @@ class SectionButtons extends Component {
     }
   }
 
+  filterMon(show_extend) {
+    const {pokemonIndex, filter_game} = this.state;
+    this.filterPokemonIndex(show_extend, pokemonIndex || 1, filter_game);
+  }
+
+  filterPokemonIndex(pokemonIndex) {
+    const {filter_game} = this.state;
+    this._setFilterAndMon(true, pokemonIndex, filter_game);
+  }
+
+  filterGameIndex(filter_game) {
+    const {pokemonIndex} = this.state;
+    this._setFilterAndMon(true, pokemonIndex, filter_game);
+  }
+
+  setFilteredPokemonConfiguration(filtered_configuration_index) {
+    const {found_dens, show_extend} = this.state;
+    if(show_extend && filtered_configuration_index < found_dens.length) {
+      const use_den_conf = found_dens[filtered_configuration_index];
+      this.setState({use_den_conf})
+    } else {
+      this.setState({use_den_conf: undefined})
+    }
+  }
+
+  _setFilterAndMon(show_extend, pokemonIndex, filter_game) {
+    this.setState({show_extend, pokemonIndex,filter_game});
+    if(!show_extend) return;
+
+    this.dataProvider.load_nests()
+    .then(loaded_nests => {
+
+      const list = loaded_nests.find(({game}) => game == filter_game)
+      if(list) {
+        const { nests } = list;
+        console.log(nests);
+
+        var found_dens = [];
+        nests.forEach(({nestId, pokemons}) => {
+          pokemons.filter(p => p.species() == pokemonIndex).forEach(pokemon => found_dens.push({nestId, pokemon}));
+        });
+
+        this.setState({found_dens, use_den_conf: found_dens.length > 0 ? found_dens[0]:undefined});
+      }
+    });
+  }
+
+  foundDenToString(found_den) {
+    const { pokemon, nestId } = found_den;
+    var { MinRank, MaxRank } = (pokemon.data||{MinRank: 0, MaxRank: 0});
+    const rank = MinRank == MaxRank ? MinRank : `${MinRank+1}-${MaxRank+1}`;
+    const gmax = pokemon.isGigantamax() ? "G " : " ";
+
+    return `${names[pokemon.species()]} ${gmax}${rank}\u2605(${den_names[nestId]})`
+  }
+
   toShiny(type) {
     switch(type) {
       case SHINY.STAR: return SHINY_TYPE[1];
@@ -158,7 +236,7 @@ class SectionButtons extends Component {
   onDudus = (dudus) => this.setState({dudus});
 
   render() {
-    const {dudus, isDuduMode, darkMode, results, error, progressStep, progressLimit} = this.state;
+    const {found_dens, show_extend, dudus, isDuduMode, darkMode, results, error, progressStep, progressLimit} = this.state;
     const showModal = error && error.length > 0;
 
     console.log("footer", showModal);
@@ -256,7 +334,57 @@ class SectionButtons extends Component {
                           </FormGroup>
                         </Col>
                       </Row>
+
+                      {show_extend &&<Row>
+                        <Col sm="12" md="12" lg="12">
+                          <div id="filter_title">
+                            <p><span className="note">Filter to find frame back</span></p>
+                          </div>
+                        </Col>
+                        <Col sm="12" md="6" lg="6">
+                          <FormGroup>
+                            <Input type="select" name="select" id="pokemon_filter" onChange={event => this.filterPokemonIndex(event.target.selectedIndex + 1)}>
+                              {
+                                names.filter((name, i) => i > 0).map((name, index) => <option value={index+1}>{`#${index+1} ${name}`}</option> )
+                              }
+                            </Input>
+                          </FormGroup>
+                        </Col>
+                        <Col sm="12" md="6" lg="6">
+                          <FormGroup>
+                            <Input type="select" name="select" id="pokemon_filter" onChange={event => this.filterGameIndex(event.target.selectedIndex + 1)}>
+                              <option>Sword</option>
+                              <option>Shield</option>
+                            </Input>
+                          </FormGroup>
+                        </Col>
+                        <Col sm="12" md="12" lg="12">
+                          <FormGroup>
+                            <Input type="select" name="select" id="pokemon_filter" onChange={event => this.setFilteredPokemonConfiguration(event.target.selectedIndex)}>
+                              {
+                                found_dens.map(found_den => <option>{this.foundDenToString(found_den)}</option>)
+                              }
+                            </Input>
+                          </FormGroup>
+                        </Col>
+                      </Row>}
+
                       <Row>
+                        <Col>
+                          <div id="switches">
+                            <p>
+                              <span className="note">Find frame</span>
+                            </p>
+                            <label>
+                              <Switch
+                                onChange={(e, isOn) => this.filterMon(isOn)}
+                                defaultValue={false}
+                                onColor="primary"
+                                offColor="primary"
+                              />
+                            </label>
+                          </div>
+                        </Col>
                         <Col>
                           <div id="switches">
                             <p>

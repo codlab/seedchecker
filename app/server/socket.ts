@@ -47,8 +47,8 @@ export default class DuduSocket {
     private onMessage(message: string) {
         console.log("message", {message});
         try {
-            const json = JSON.parse(message);
-            const { type, content } = (json||{});
+            const json: {type:number, content: string} = JSON.parse(message);
+            const { type, content } = (json||{type:0, content:""});
             if(0 == type && content && content.length > 0) {
                 const lines = content.split(":\n");
                 if(lines.length == 2) {
