@@ -203,34 +203,59 @@ class SectionButtons extends Component {
     }
   }
 
+  loadEvent(game, name) {
+    return this.dataProvider.load_event(name)
+    .then(events => events.filter(event => {
+      console.log("matching game ?", event.game+" "+game)
+      return event.game == game
+    }))
+    .then(events => events.map(event => ({...event, name}) ));
+  }
+
+  loadEvents(game) {
+    return this.dataProvider.load_events()
+    .then(events => Promise.all(events.map(event => this.loadEvent(game, event))))
+    .then(events => events.flat())
+  }
+
   _setFilterAndMon(show_extend, pokemonIndex, filter_game) {
     this.setState({show_extend, pokemonIndex,filter_game});
     if(!show_extend) return;
 
-    this.dataProvider.load_nests()
-    .then(loaded_nests => {
+    Promise.all([
+      this.dataProvider.load_nests(),
+      this.loadEvents(filter_game)
+    ])
+    .then(([loaded_nests, loaded_events]) => {
 
+      var found_dens = [];
       const list = loaded_nests.find(({game}) => game == filter_game)
       if(list) {
         const { nests } = list;
         console.log(nests);
 
-        var found_dens = [];
         nests.forEach(({nestId, pokemons}) => {
           pokemons.filter(p => p.species() == pokemonIndex).forEach(pokemon => found_dens.push({nestId, pokemon}));
         });
-
-        this.setState({found_dens, use_den_conf: found_dens.length > 0 ? found_dens[0]:undefined});
       }
+
+      if(loaded_events) {
+        loaded_events.forEach(({name, pokemons}) => {
+          pokemons.filter(p => p.species() == pokemonIndex).forEach(pokemon => found_dens.push({name, pokemon}));
+        });
+      }
+
+      this.setState({found_dens, use_den_conf: found_dens.length > 0 ? found_dens[0]:undefined});
     });
   }
 
   foundDenToString(found_den) {
-    const { pokemon, nestId } = found_den;
+    const { pokemon, nestId, name } = found_den;
     var { MinRank, MaxRank } = (pokemon.data||{MinRank: 0, MaxRank: 0});
-    const rank = MinRank == MaxRank ? MinRank : `${MinRank+1}-${MaxRank+1}`;
+    const rank = MinRank == MaxRank ? (MinRank+1) : `${MinRank+1}-${MaxRank+1}`;
     const gmax = pokemon.isGigantamax() ? "G " : " ";
 
+    if(name) return `${names[pokemon.species()]} ${gmax}${rank}\u2605(${name})`
     return `${names[pokemon.species()]} ${gmax}${rank}\u2605(${den_names[nestId]})`
   }
 
@@ -402,7 +427,7 @@ class SectionButtons extends Component {
                         </Col>
                         <Col sm="12" md="6" lg="6">
                           <FormGroup>
-                            <Input type="select" name="select" id="pokemon_filter" onChange={event => this.filterPokemonIndex(event.target.selectedIndex + 1)}>
+                            <Input type="select" name="select" onChange={event => this.filterPokemonIndex(event.target.selectedIndex + 1)}>
                               {
                                 names.filter((name, i) => i > 0).map((name, index) => <option value={index+1}>{`#${index+1} ${name}`}</option> )
                               }
@@ -411,7 +436,7 @@ class SectionButtons extends Component {
                         </Col>
                         <Col sm="12" md="6" lg="6">
                           <FormGroup>
-                            <Input type="select" name="select" id="pokemon_filter" onChange={event => this.filterGameIndex(event.target.selectedIndex + 1)}>
+                            <Input type="select" name="select" onChange={event => this.filterGameIndex(event.target.selectedIndex + 1)}>
                               <option>Sword</option>
                               <option>Shield</option>
                             </Input>
@@ -419,7 +444,7 @@ class SectionButtons extends Component {
                         </Col>
                         <Col sm="12" md="12" lg="12">
                           <FormGroup>
-                            <Input type="select" name="select" id="pokemon_filter" onChange={event => this.setFilteredPokemonConfiguration(event.target.selectedIndex)}>
+                            <Input type="select" name="select" onChange={event => this.setFilteredPokemonConfiguration(event.target.selectedIndex)}>
                               {
                                 found_dens.map(found_den => <option>{this.foundDenToString(found_den)}</option>)
                               }
