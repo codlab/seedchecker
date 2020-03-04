@@ -121,10 +121,10 @@ class SectionButtons extends Component {
       const pokemon = new PokemonFrame(this.asSeed(seed), 0);
       const results = [];
   
-      const limit = infinityMode ? (squareOnly ? 5 : 10) : 1;
+      var limit = infinityMode ? (squareOnly ? 5 : 10) : 1;
 
       const canceled = () => this.new_calculus != timestamp;
-      const done = () => (infinityMode && results.length >= limit) || (!infinityMode && results.length > 0);
+      const done = () => (infinityMode && limit > 0) || (!infinityMode && results.length > 0);
 
       const step = (remaining_steps) => {
         const current_found = results.length;
@@ -133,6 +133,7 @@ class SectionButtons extends Component {
           const result = pokemon.getShinyState(pokemon_configuration);
           var valid = result.shiny != SHINY.NONE;
           if(squareOnly) valid = valid && result.shiny == SHINY.SQUARE;
+          if(valid) limit --;
     
           console.log("use_den_conf", {result, pokemon_configuration});
           result.row_type = result.shiny;
