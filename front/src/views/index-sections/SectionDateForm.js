@@ -3,7 +3,7 @@ import Switch from "react-bootstrap-switch";
 import ReactDatetime from "react-datetime";
 import classnames from "classnames";
 
-import PokemonFrame, {Configs, SHINY, OnlineDataProvider, Game} from "libseedchecker";
+import PokemonFrame, {Configs, SHINY, OnlineDataProvider, Game, CalcIVS} from "libseedchecker";
 /*
 
     SWORD = 1,
@@ -29,8 +29,8 @@ import {
 import DarkMode from "components/DarkMode";
 import DuduMode from "components/Dudu";
 
-const SHINY_TYPE = ["-", "☆", "◇"];
-
+const ROW_TYPE = ["-", "⭐", "◇", "👉"];
+const NATURES = [ "Bashful", "Docile", "Hardy", "Serious", "Quirky", "Bold", "Modest", "Calm", "Timid", "Lonely", "Mild", "Gentle", "Hasty", "Adamant", "Impish", "Careful", "Jolly", "Naughty", "Lax", "Rash", "Naive", "Brave", "Relaxed", "Quiet", "Sassy" ];
 
 const {locations} = Configs.data;
 const { nests, names } = Configs;
@@ -42,6 +42,9 @@ nests.forEach(nest => {
   den_names[nest.normal] = name;
   den_names[nest.rare] = name;
 });
+
+var IV31 = [];
+while(IV31.length < 31) IV31.push(IV31.length);
 
 class SectionButtons extends Component {
 
@@ -107,7 +110,11 @@ class SectionButtons extends Component {
   }
 
   calculate() {
-    const { seed, infinityMode, squareOnly, switchDate } = this.state;
+    const { seed, infinityMode, squareOnly, switchDate, use_den_conf, input_stats } = this.state;
+    var pokemon_configuration = use_den_conf ? use_den_conf.pokemon : null;
+
+    const ivs = input_stats ? this.recalculateIVS(input_stats) : undefined;
+    
     try {
       const timestamp = moment().valueOf();
       this.new_calculus = timestamp;
@@ -123,10 +130,29 @@ class SectionButtons extends Component {
         const current_found = results.length;
         while(!canceled() && remaining_steps > 0 && !done()) {
           pokemon.advanceFrame(1);
-          const result = pokemon.getShinyState();
+          const result = pokemon.getShinyState(pokemon_configuration);
           var valid = result.shiny != SHINY.NONE;
           if(squareOnly) valid = valid && result.shiny == SHINY.SQUARE;
     
+          console.log("use_den_conf", {result, pokemon_configuration});
+          result.row_type = result.shiny;
+          if(input_stats) {
+            const {hp, atk, def, spa, spd, spe} = result;
+            var same_ivs = true;
+            if(hp !== ivs.hp) same_ivs = false;
+            if(atk !== ivs.atk) same_ivs = false;
+            if(def !== ivs.def) same_ivs = false;
+            if(spa !== ivs.spa) same_ivs = false;
+            if(spd !== ivs.spd) same_ivs = false;
+            if(spe !== ivs.spe) same_ivs = false;
+
+            console.log("iv match ? ", { same_ivs, calculated: {hp, atk, def, spa, spd, spe}, ivs });
+            if(same_ivs && !valid) {
+              result.row_type = "iv";
+              valid = true;
+            }
+           }
+ 
           valid && results.push(result);
           remaining_steps --;
         }
@@ -207,10 +233,11 @@ class SectionButtons extends Component {
     return `${names[pokemon.species()]} ${gmax}${rank}\u2605(${den_names[nestId]})`
   }
 
-  toShiny(type) {
+  toRowType(type) {
+    if(type == "iv") return ROW_TYPE[3];
     switch(type) {
-      case SHINY.STAR: return SHINY_TYPE[1];
-      case SHINY.SQUARE: return SHINY_TYPE[2];
+      case SHINY.STAR: return ROW_TYPE[1];
+      case SHINY.SQUARE: return ROW_TYPE[2];
       default: return "";
     }
   }
@@ -234,6 +261,37 @@ class SectionButtons extends Component {
   onDarkMode = (isOn) => this.setState({darkMode: isOn ? "section-dark" : ""});
   onDuduMode = (isOn) => this.setState({isDuduMode: isOn });
   onDudus = (dudus) => this.setState({dudus});
+
+  setSelectedStat(name, value) {
+    var { use_den_conf, input_stats } = this.state;
+
+    if(!input_stats) input_stats = {nature: 1, level: 0, hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0};
+    input_stats[name] = value;
+
+    this.setState({input_stats: {...input_stats}});
+  }
+
+  recalculateIVS(input_stats) {
+    var { use_den_conf, input_stats } = this.state;
+    if(!use_den_conf || !input_stats) return undefined;
+    const array = ["hp", "atk", "def", "spa", "spd", "spe"];
+
+    const stats = array.map(v => input_stats[v]);
+
+    const calc = new CalcIVS(use_den_conf.pokemon.species(), input_stats.level, input_stats.nature || 1, stats);
+    const result = {};
+    const calculated = calc.calc();
+    console.log({calculated, stats});
+    calculated.forEach((value, index) => result[array[index]] = value);
+
+    return result;
+  }
+
+  showCalculateIV(name) {
+    const ivs = this.recalculateIVS();
+    if(!ivs) return undefined;
+    return ivs[name];
+  }
 
   render() {
     const {found_dens, show_extend, dudus, isDuduMode, darkMode, results, error, progressStep, progressLimit} = this.state;
@@ -287,7 +345,7 @@ class SectionButtons extends Component {
                   <label>
                     <Switch
                       onChange={(e, isOn) => DarkMode.instance.setDarkMode(isOn)}
-                      defaultValue={darkMode}
+                      defaultValue={darkMode && darkMode.length > 0}
                       onColor="primary"
                       offColor="primary"
                     />
@@ -335,7 +393,7 @@ class SectionButtons extends Component {
                         </Col>
                       </Row>
 
-                      {show_extend &&<Row>
+                      {show_extend && <Row>
                         <Col sm="12" md="12" lg="12">
                           <div id="filter_title">
                             <p><span className="note">Filter to find frame back</span></p>
@@ -364,6 +422,36 @@ class SectionButtons extends Component {
                               {
                                 found_dens.map(found_den => <option>{this.foundDenToString(found_den)}</option>)
                               }
+                            </Input>
+                          </FormGroup>
+                        </Col>
+
+                        <Col sm="12" md="12" lg="12">
+                          <div id="filter_title">
+                            <p><span className="note">Caught Pokémon at current frame 's Stats</span></p>
+                          </div>
+                        </Col>
+                        {
+                          ["LEVEL", "HP", "ATK", "DEF", "SPA", "SPD", "SPE"].map(value => {
+                            return (
+                              <Col sm="2">
+                                <FormGroup>
+                                  <div id="filter_title">
+                                    <p><span className="note">{value}</span></p>
+                                  </div>
+                                  <Input type="number" min={-1} max={9000} onChange={event => this.setSelectedStat(value.toLowerCase(), parseInt(event.target.value))}/>
+                                </FormGroup>
+                                { this.showCalculateIV(value.toLowerCase()) }
+                              </Col>);
+                          })
+                        }
+                        <Col sm="12" md="3" lg="3">
+                          <FormGroup>
+                            <div id="filter_title">
+                              <p><span className="note">Nature</span></p>
+                            </div>
+                            <Input type="select" name="select" id="pokemon_filter" onChange={event => this.setSelectedStat("nature", event.target.selectedIndex + 1)}>
+                              { NATURES.map(nature => <option>{nature}</option>) }
                             </Input>
                           </FormGroup>
                         </Col>
@@ -450,27 +538,33 @@ class SectionButtons extends Component {
                             <tr>
                               <th>#</th>
                               <th>Type</th>
-                              <th>Seed</th>
+                              <th>Infos</th>
                               <th>DD/MM/YYYY</th>
                             </tr>
                           </thead>
                           <tbody>
                           {
                             (results||[]).map((result, index) => {
-                              const { frame, seed } = result.current;
-                              console.log(seed);
+                              const { current, hp, atk, def, spa, spd, spe } = result;
+                              const { frame, seed } = current;
+                              console.log(result.current);
+
+                              var ivs = "";
+                              if(hp || atk || def || spa || spd || spe) {
+                                ivs = `${hp}/${atk}/${def}/${spa}/${spd}/${spe}`
+                              }
 
                               return (<tr>
                                 <td className="colorable">
                                   #{frame}
                                 </td>
                                 <td className="colorable">
-                                  {this.toShiny(result.shiny)}
+                                  {this.toRowType(result.row_type)}
                                 </td>
-                                <td className="colorable_small">
-                                  {seed.toString(16)}
+                                <td className="colorable">
+                                  {seed.toString(16)}<br />{ivs}
                                 </td>
-                                <td className="colorable_small">
+                                <td className="colorable">
                                   {this.toDateFrame(frame)}
                                 </td>
                               </tr>);
