@@ -153,7 +153,7 @@ class SectionButtons extends Component {
 
   filterMon(show_extend) {
     const {pokemonIndex, filter_game} = this.state;
-    this.filterPokemonIndex(show_extend, pokemonIndex || 1, filter_game);
+    this._setFilterAndMon(show_extend, pokemonIndex || 1, filter_game);
   }
 
   filterPokemonIndex(pokemonIndex) {
