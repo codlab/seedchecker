@@ -124,7 +124,7 @@ class SectionButtons extends Component {
       var limit = infinityMode ? (squareOnly ? 5 : 10) : 1;
 
       const canceled = () => this.new_calculus != timestamp;
-      const done = () => (infinityMode && limit > 0) || (!infinityMode && results.length > 0);
+      const done = () => limit == 0;
 
       const step = (remaining_steps) => {
         const current_found = results.length;
