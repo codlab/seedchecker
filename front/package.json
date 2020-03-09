@@ -6,7 +6,7 @@
   "dependencies": {
     "classnames": "2.2.6",
     "eventemitter2": "^6.0.0",
-    "libseedchecker": "^1.6.0",
+    "libseedchecker": "^1.7.0",
     "moment": "^2.24.0",
     "node-sass": "4.12.0",
     "nouislider": "13.1.5",
