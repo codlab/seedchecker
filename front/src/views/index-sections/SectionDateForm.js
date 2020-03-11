@@ -57,7 +57,8 @@ class SectionButtons extends Component {
       darkMode: isOn ? "section-dark" : "",
       results:[],
       infinityMode: true,
-      squareOnly: false,
+      shinyType: SHINY.STAR,
+      isHA: false,
       progressLimit: 0,
       progressStep: 0,
       show_extend: false,
@@ -97,9 +98,12 @@ class SectionButtons extends Component {
     this.setState({infinityMode});
   }
 
-  toSquare(squareOnly) {
-    console.log(squareOnly);
-    this.setState({squareOnly});
+  toShiny(shinyType) {
+    this.setState({shinyType});
+  }
+
+  toHA(isHA) {
+    this.setState({isHA});
   }
 
   asSeed(seed) {
@@ -110,7 +114,7 @@ class SectionButtons extends Component {
   }
 
   calculate() {
-    const { seed, infinityMode, squareOnly, switchDate, use_den_conf, input_stats } = this.state;
+    const { seed, isHA, infinityMode, shinyType, switchDate, use_den_conf, input_stats } = this.state;
     var pokemon_configuration = use_den_conf ? use_den_conf.pokemon : null;
 
     const ivs = input_stats ? this.recalculateIVS(input_stats) : undefined;
@@ -121,21 +125,27 @@ class SectionButtons extends Component {
       const pokemon = new PokemonFrame(this.asSeed(seed), 0);
       const results = [];
   
-      var limit = infinityMode ? (squareOnly ? 5 : 10) : 1;
+      var limit = infinityMode ? 10 : 1;
 
       const canceled = () => this.new_calculus != timestamp;
       const done = () => limit == 0;
 
-      const step = (remaining_steps) => {
+      const step = (remaining_steps, current_frames) => {
         const current_found = results.length;
         while(!canceled() && remaining_steps > 0 && !done()) {
+          current_frames ++;
           pokemon.advanceFrame(1);
           const result = pokemon.getShinyState(pokemon_configuration);
-          var valid = result.shiny != SHINY.NONE;
-          if(squareOnly) valid = valid && result.shiny == SHINY.SQUARE;
+          var valid = true;
+          var validShiny = true;
+          var validHA = true;
+          if(shinyType == SHINY.STAR || shinyType == SHINY.SQUARE) validShiny = result.shiny == shinyType;//!= SHINY.NONE;
+          if(isHA) validHA = result.ability == "H";
+          valid = validShiny && validHA;
           if(valid) limit --;
+          
+          result.show_ha = result.ability == "H";
     
-          console.log("use_den_conf", {result, pokemon_configuration});
           result.row_type = result.shiny;
           if(input_stats) {
             const {hp, atk, def, spa, spd, spe} = result;
@@ -161,17 +171,19 @@ class SectionButtons extends Component {
         if(canceled()) {
           console.log("canceled");
         } else if(done()) {
-          this.setState({progressLimit: limit, progressStep: results.length, results, calculatedDate: switchDate ? switchDate.clone(): undefined});
+          this.setState({progressLimit: limit, currentSteps: current_frames, progressStep: results.length, results, calculatedDate: switchDate ? switchDate.clone(): undefined});
         } else {
           if(results.length != current_found) {
-            this.setState({progressLimit: limit, progressStep: results.length});
+            this.setState({progressLimit: limit, currentSteps: current_frames, progressStep: results.length});
+          } else {
+            this.setState({currentSteps: current_frames});
           }
-          setTimeout(() => step(50), 1);
+          setTimeout(() => step(500, current_frames), 1);
         }
       }
 
-      this.setState({progressLimit: limit, progressStep: 0, results, calculatedDate: switchDate ? switchDate.clone(): undefined});
-      step(50);
+      this.setState({progressLimit: limit, currentSteps: 0, progressStep: 0, results, calculatedDate: switchDate ? switchDate.clone(): undefined});
+      step(500, 0);
     } catch(e) {
       console.error(e);
       this.setState({error: "Error while calculating the Pokémon info", results: [], calculatedDate: undefined});
@@ -184,18 +196,18 @@ class SectionButtons extends Component {
   }
 
   filterPokemonIndex(pokemonIndex) {
-    const {filter_game} = this.state;
-    this._setFilterAndMon(true, pokemonIndex, filter_game);
+    const {filter_game, show_extend} = this.state;
+    this._setFilterAndMon(show_extend, pokemonIndex, filter_game);
   }
 
   filterGameIndex(filter_game) {
-    const {pokemonIndex} = this.state;
-    this._setFilterAndMon(true, pokemonIndex, filter_game);
+    const {pokemonIndex, show_extend} = this.state;
+    this._setFilterAndMon(show_extend, pokemonIndex, filter_game);
   }
 
   setFilteredPokemonConfiguration(filtered_configuration_index) {
-    const {found_dens, show_extend} = this.state;
-    if(show_extend && filtered_configuration_index < found_dens.length) {
+    const {found_dens, show_extend, isHA} = this.state;
+    if((show_extend || isHA) && filtered_configuration_index < found_dens.length) {
       const use_den_conf = found_dens[filtered_configuration_index];
       this.setState({use_den_conf})
     } else {
@@ -219,8 +231,9 @@ class SectionButtons extends Component {
   }
 
   _setFilterAndMon(show_extend, pokemonIndex, filter_game) {
+    const { isHA } = this.state;
     this.setState({show_extend, pokemonIndex,filter_game});
-    if(!show_extend) return;
+    if(!show_extend && !isHA) return;
 
     Promise.all([
       this.dataProvider.load_nests(),
@@ -320,7 +333,7 @@ class SectionButtons extends Component {
   }
 
   render() {
-    const {found_dens, show_extend, dudus, isDuduMode, darkMode, results, error, progressStep, progressLimit} = this.state;
+    const {found_dens, show_extend, isHA, dudus, isDuduMode, darkMode, results, error, progressStep, progressLimit} = this.state;
     const showModal = error && error.length > 0;
 
     console.log("footer", showModal);
@@ -419,7 +432,7 @@ class SectionButtons extends Component {
                         </Col>
                       </Row>
 
-                      {show_extend && <Row>
+                      {(show_extend || isHA) && <Row>
                         <Col sm="12" md="12" lg="12">
                           <div id="filter_title">
                             <p><span className="note">Filter to find frame back</span></p>
@@ -451,7 +464,9 @@ class SectionButtons extends Component {
                             </Input>
                           </FormGroup>
                         </Col>
+                      </Row>}
 
+                      {show_extend && <Row>
                         <Col sm="12" md="12" lg="12">
                           <div id="filter_title">
                             <p><span className="note">Caught Pokémon at current frame 's Stats</span></p>
@@ -514,14 +529,59 @@ class SectionButtons extends Component {
                             </label>
                           </div>
                         </Col>
+                      </Row>
+
+                      <Row>
                         <Col>
                           <div id="switches">
                             <p>
-                              <span className="note">Square</span>
+                              <span className="note">Shiny</span>
+                            </p>
+                            <div className="form-check-radio">
+                              <Label check>
+                                <Input
+                                  onChange={() => this.toShiny(SHINY.STAR)}
+                                  defaultChecked
+                                  id="star"
+                                  name="shinyType"
+                                  type="radio"
+                                />
+                                Star <span className="form-check-sign" />
+                              </Label>
+                            </div>
+                            <div className="form-check-radio">
+                              <Label check>
+                                <Input
+                                  onChange={() => this.toShiny(SHINY.SQUARE)}
+                                  id="square"
+                                  name="shinyType"
+                                  type="radio"
+                                />
+                                Square <span className="form-check-sign" />
+                              </Label>
+                            </div>
+                            <div className="form-check-radio">
+                              <Label check>
+                                <Input
+                                  onChange={() => this.toShiny(SHINY.NONE)}
+                                  id="none"
+                                  name="shinyType"
+                                  type="radio"
+                                />
+                                None <span className="form-check-sign" />
+                              </Label>
+                            </div>
+                          </div>
+                        </Col>
+
+                        <Col>
+                          <div id="switches">
+                            <p>
+                              <span className="note">HA</span>
                             </p>
                             <label>
                               <Switch
-                                onChange={(e, isOn) => this.toSquare(isOn)}
+                                onChange={(e, isOn) => this.toHA(isOn)}
                                 defaultValue={false}
                                 onColor="primary"
                                 offColor="primary"
@@ -542,7 +602,7 @@ class SectionButtons extends Component {
                     <div id="buttons">
                       <div className="title">
                         <h3>
-                          Results <br />
+                          Results { this.state.currentSteps && this.state.currentSteps > 0 ? `(${this.state.currentSteps} tests)`  : "" }<br />
                         </h3>
                       </div>
                     </div>
@@ -571,13 +631,16 @@ class SectionButtons extends Component {
                           <tbody>
                           {
                             (results||[]).map((result, index) => {
-                              const { current, hp, atk, def, spa, spd, spe } = result;
+                              const { current, hp, atk, def, spa, spd, spe, show_ha } = result;
                               const { frame, seed } = current;
                               console.log(result.current);
 
                               var ivs = "";
                               if(hp || atk || def || spa || spd || spe) {
                                 ivs = `${hp}/${atk}/${def}/${spa}/${spd}/${spe}`
+                              }
+                              if(show_ha) {
+                                ivs += " (HA)";
                               }
 
                               return (<tr>
