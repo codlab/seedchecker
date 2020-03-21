@@ -30,14 +30,21 @@ export default class Arduino {
 
         this.router.post("/compile", (req, res) => {
             const uuid = uuidv4();
-            const folder = `${__dirname}/tmp/${uuid}/`;
+            const folder = `${__dirname}/tmp/${uuid}`;
+            const result_folder = `${folder}/bots/auto_loto/`;
+            const result_filter = `${folder}/bots/auto_loto/AutoLoto.hex`;
 
             mkdir(folder)
             .then(() => copy("/usr/local/arduino/src", folder))
-            .then(() => exec("/bin/bash", ["-c", `cd ${folder}/ ; make all`] ))
+            .then(() => exec("/bin/bash", ["-c", `cd ${result_folder}/ ; make`] ))
             .then((result: Result) => {
                 console.log("result", {result});
-                res.json({finished: uuid});
+
+                return new Promise((resolve, reject) => {
+                    res.sendFile(`${result_filter}`, (err: Error) => {
+                        exec("/bin/rm", ["-rf", folder]).then(resolve).catch(reject);
+                    });
+                });
             })
             .catch((err: Error) => {
                 console.error(err);
