@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "https://pokectr.com/",
   "dependencies": {
+    "avrbro": "0.0.6",
     "classnames": "2.2.6",
     "eventemitter2": "^6.0.0",
     "libseedchecker": "^1.8.0",

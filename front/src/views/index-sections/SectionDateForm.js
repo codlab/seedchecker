@@ -29,6 +29,10 @@ import {
 import DarkMode from "components/DarkMode";
 import DuduMode from "components/Dudu";
 
+//from https://github.com/kaelhem/avrbro
+import avrbro from 'avrbro'
+const { parseHex, openSerial, flash, reset } = avrbro
+
 const ROW_TYPE = ["-", "⭐", "◇", "👉"];
 const NATURES = [ "Bashful", "Docile", "Hardy", "Serious", "Quirky", "Bold", "Modest", "Calm", "Timid", "Lonely", "Mild", "Gentle", "Hasty", "Adamant", "Impish", "Careful", "Jolly", "Naughty", "Lax", "Rash", "Naive", "Brave", "Relaxed", "Quiet", "Sassy" ];
 
@@ -42,6 +46,18 @@ nests.forEach(nest => {
   den_names[nest.normal] = name;
   den_names[nest.rare] = name;
 });
+
+const readFileAsync = (file) => {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader()
+    reader.onload = () => {
+      resolve(reader.result)
+    }
+    reader.onerror = reject
+    reader.readAsArrayBuffer(file)
+  })
+}
+
 
 var IV31 = [];
 while(IV31.length < 31) IV31.push(IV31.length);
@@ -295,6 +311,32 @@ class SectionButtons extends Component {
     DarkMode.instance.removeListener("dark_mode", this.onDarkMode);
     DuduMode.instance.removeListener("dudu", this.onDuduMode);
     DuduMode.instance.removeListener("dudu_list", this.onDudus);
+  }
+
+  flash = async () => {
+    // connect to device using web serial API
+    const serial = await openSerial()
+    if (serial) {
+    
+      // get .hex buffer
+      const response = await fetch('/arduino/compile?action=auto_loto&architecture=atmega16u2&day_to_skip=1')
+      const data = await response.blob()
+      const fileData = await readFileAsync(data)
+      const hexBuffer = parseHex(new TextDecoder("utf-8").decode(fileData))
+      
+      // reset the board
+      await reset(serial)
+      
+      // upload .hex file
+      const success = await flash(serial, hexBuffer, { boardName: 'nano' })
+      if (success) {
+        console.log('.hex file uploaded on board successfully!')
+      } else {
+        console.log('an error has occurred :(')
+      }
+    } else {
+      console.log('operation canceled by user')
+    }
   }
 
   onDarkMode = (isOn) => this.setState({darkMode: isOn ? "section-dark" : ""});
@@ -664,6 +706,28 @@ class SectionButtons extends Component {
                         }
                       </Col>
                     </Row>
+                  </Col>
+                </Row>
+              </Col>
+
+
+              <Col sm="12" md="6" lg="6">
+                <Row>
+                  <Col sm="12" md="12" lg="12">
+                  <div id="buttons">
+                    <div className="title">
+                      <h3>
+                        Flash Arduino<br />
+                      </h3>
+                    </div>
+                      <Row>
+                        <Col>
+                          <Button color="success" type="button" onClick={() => this.flash()}>
+                            Flash AutoLoto (WIP)
+                          </Button>
+                        </Col>
+                      </Row>
+                    </div>
                   </Col>
                 </Row>
               </Col>
