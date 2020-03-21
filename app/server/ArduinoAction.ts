@@ -55,8 +55,8 @@ function toNumber(value: any) {
 }
 
 export const actionFrom = (req: any): ArduinoActionMake|null => {
-    const body = (req.body || {}).body || {};
-    const query = (req.query || {}).query || {};
+    const body = req.body || {};
+    const query = req.query || {};
     var folder: string|null = null;
     var holder = {};
     if(body && body.action) {
@@ -75,5 +75,6 @@ export const actionFrom = (req: any): ArduinoActionMake|null => {
     const result: ArduinoActionMake = {folder: action.folder, name: action.name};
     result.params = (action.params || []).map(p => ({ name: p.make_param, value: toNumber(holder[p.name]) }));
 
+    console.log("Will execute for following", {result});
     return result;
 }
