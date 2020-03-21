@@ -34,9 +34,13 @@ export default class Arduino {
 
     compile:RequestHandler = (req, res) => {
         const uuid = uuidv4();
+
+        const output_file = "AutoLoto.hex";
+        const compilation_folder = "AutoLoto.hex";
+
         const folder = `/tmp/${uuid}`;
-        const result_folder = `${folder}/bots/auto_loto/`;
-        const result_filter = `${folder}/bots/auto_loto/AutoLoto.hex`;
+        const result_folder = `${folder}/bots/${compilation_folder}`;
+        const result_filter = `${result_folder}/${output_file}`;
 
         mkdir(folder)
         .then(() => copy("/usr/local/arduino/src", folder))
@@ -45,6 +49,10 @@ export default class Arduino {
             console.log("result", {result});
 
             return new Promise((resolve, reject) => {
+                res.setHeader('Content-Disposition', 'attachment; filename=' + output_file);
+                res.setHeader('Content-Transfer-Encoding', 'binary');
+                res.setHeader('Content-Type', 'application/octet-stream');
+
                 res.sendFile(`${result_filter}`, (err: Error) => {
                     exec("/bin/rm", ["-rf", folder]).then(resolve).catch(reject);
                 });
