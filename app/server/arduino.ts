@@ -36,7 +36,7 @@ export default class Arduino {
         const uuid = uuidv4();
 
         const output_file = "AutoLoto.hex";
-        const compilation_folder = "AutoLoto.hex";
+        const compilation_folder = "auto_loto";
 
         const folder = `/tmp/${uuid}`;
         const result_folder = `${folder}/bots/${compilation_folder}`;
