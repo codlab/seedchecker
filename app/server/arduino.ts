@@ -2,6 +2,7 @@ import { Router, RequestHandler } from "express";
 import { v4 as uuidv4 } from 'uuid';
 import mkdir from "mkdir-promise";
 import copy from "recursive-copy";
+import { actionFrom, ArduinoActionMake } from "./ArduinoAction";
 const { spawn } = require('child_process');
 
 interface Result {
@@ -33,10 +34,17 @@ export default class Arduino {
     }
 
     compile:RequestHandler = (req, res) => {
+        const todo: ArduinoActionMake|null = actionFrom(req);
+
+        if(!todo) {
+            res.status(500).json({error: "Invalid action"});
+            return;
+        }
+
         const uuid = uuidv4();
 
-        const output_file = "AutoLoto.hex";
-        const compilation_folder = "auto_loto";
+        const output_file = `${todo.name}.hex`;
+        const compilation_folder = todo.folder;
 
         const folder = `/tmp/${uuid}`;
         const result_folder = `${folder}/bots/${compilation_folder}`;
