@@ -1,4 +1,5 @@
 import Arduino from "./arduino";
+import { Architectures } from "./Architectures";
 
 export interface ArduinoParamQuery {
     name: string,
@@ -17,6 +18,7 @@ export interface ArduinoAction {
 }
 
 export interface ArduinoActionMake {
+    architecture: string,
     folder: string,
     name: string,
     params: ArduinoParam[]
@@ -73,21 +75,28 @@ export const actionFrom = (req: any): ArduinoActionMake|null => {
     const body = req.body || {};
     const query = req.query || {};
     var folder: string|null = null;
+    var architecture: string|null = null;
     var holder = {};
     if(body && body.action) {
         folder = body.action;
+        architecture = body.architecture;
         holder = body;
     } else if(query && query.action) {
         folder = query.action;
+        architecture = query.architecture;
         holder = query;
     } else {
+        return null;
+    }
+
+    if(!architecture || !Architectures.find(a => a === architecture)) {
         return null;
     }
 
     const action = ArduinoActions.find(item => item.folder === folder);
     if(!action) return null;
 
-    const result: ArduinoActionMake = {folder: action.folder, name: action.name, params: []};
+    const result: ArduinoActionMake = {architecture, folder: action.folder, name: action.name, params: []};
     const params = (action.params || []);
     const keys = Object.keys(holder).filter(k => params.find(p => p.name == k));
     if(keys.length !== params.length) {

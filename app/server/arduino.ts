@@ -55,7 +55,7 @@ export default class Arduino {
 
         mkdir(folder)
         .then(() => copy("/usr/local/arduino/src", folder))
-        .then(() => exec("/bin/bash", ["-c", `cd ${result_folder}/ ; make ${options}`] ))
+        .then(() => exec("/bin/bash", ["-c", `cd ${result_folder}/ ; make MCU="${todo.architecture}" ${options}`] ))
         .then((result: Result) => {
             console.log("result", {result});
 
