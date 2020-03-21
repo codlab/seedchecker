@@ -34,7 +34,7 @@ export default class Arduino {
 
     compile:RequestHandler = (req, res) => {
         const uuid = uuidv4();
-        const folder = `${__dirname}/tmp/${uuid}`;
+        const folder = `/tmp/${uuid}`;
         const result_folder = `${folder}/bots/auto_loto/`;
         const result_filter = `${folder}/bots/auto_loto/AutoLoto.hex`;
 
