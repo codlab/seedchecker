@@ -49,10 +49,13 @@ export default class Arduino {
         const folder = `/tmp/${uuid}`;
         const result_folder = `${folder}/bots/${compilation_folder}`;
         const result_filter = `${result_folder}/${output_file}`;
+        var options = todo.params.map(p => `-D${p.name}=${p.value}`).join(" ");
+        options = `OPTIONALS="${options}"`;
+
 
         mkdir(folder)
         .then(() => copy("/usr/local/arduino/src", folder))
-        .then(() => exec("/bin/bash", ["-c", `cd ${result_folder}/ ; make`] ))
+        .then(() => exec("/bin/bash", ["-c", `cd ${result_folder}/ ; make ${options}`] ))
         .then((result: Result) => {
             console.log("result", {result});
 
