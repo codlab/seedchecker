@@ -19,7 +19,7 @@ export interface ArduinoAction {
 export interface ArduinoActionMake {
     folder: string,
     name: string,
-    params?: ArduinoParam[]
+    params: ArduinoParam[]
 }
 
 
@@ -87,9 +87,9 @@ export const actionFrom = (req: any): ArduinoActionMake|null => {
     const action = ArduinoActions.find(item => item.folder === folder);
     if(!action) return null;
 
-    const result: ArduinoActionMake = {folder: action.folder, name: action.name};
+    const result: ArduinoActionMake = {folder: action.folder, name: action.name, params: []};
     const params = (action.params || []);
-    const keys = Object.keys(holder).filter(k => params.find(p => p.name == k);
+    const keys = Object.keys(holder).filter(k => params.find(p => p.name == k));
     if(keys.length !== params.length) {
         console.log("the keys do not match", {params, keys});
         return null;
