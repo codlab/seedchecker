@@ -33,6 +33,29 @@ import DuduMode from "components/Dudu";
 import avrbro from 'avrbro'
 const { parseHex, openSerial, flash, reset } = avrbro
 
+const openSerialDup = async (options = {}) => {
+  const { 
+    baudrate = 57600,
+    vendorId = 0x2341
+  } = options
+  // Filter on devices with the Arduino USB vendor ID. Not yet implemented...
+  const requestOptions = {
+    filters: [/*{ vendorId }*/]
+  }
+
+  // Request an Arduino from the user.
+  try {
+    const port = await navigator.serial.requestPort(requestOptions)
+    await port.open({ baudrate })
+    const reader = port.readable.getReader()
+    const writer = port.writable.getWriter()
+    return {port, reader, writer}
+  } catch(e) {
+    console.log(e)
+  }
+  return null
+}
+
 const ROW_TYPE = ["-", "⭐", "◇", "👉"];
 const NATURES = [ "Bashful", "Docile", "Hardy", "Serious", "Quirky", "Bold", "Modest", "Calm", "Timid", "Lonely", "Mild", "Gentle", "Hasty", "Adamant", "Impish", "Careful", "Jolly", "Naughty", "Lax", "Rash", "Naive", "Brave", "Relaxed", "Quiet", "Sassy" ];
 
