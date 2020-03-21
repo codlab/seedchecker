@@ -328,7 +328,7 @@ class SectionButtons extends Component {
       await reset(serial)
       
       // upload .hex file
-      const success = await flash(serial, hexBuffer, { boardName: 'nano' })
+      const success = await flash(serial, hexBuffer, { boardName: 'uno' })
       if (success) {
         console.log('.hex file uploaded on board successfully!')
       } else {
