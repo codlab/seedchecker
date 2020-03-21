@@ -11,6 +11,7 @@ import fs = require('fs');
 
 
 import https from "https";
+import Arduino from './server/arduino.js';
 
 export default class ApiServer {
 
@@ -28,6 +29,7 @@ export default class ApiServer {
     .use(cors())
     .use(express.static(path.join(__dirname, '../front/build')))
     .use(body_parser.json())
+    .use("/arduino", new Arduino().router);
   
     const { key, cert, ca } = config;
 
