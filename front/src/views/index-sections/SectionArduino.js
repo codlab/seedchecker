@@ -64,6 +64,20 @@ class SectionButtons extends Component {
 
   onDarkMode = (isOn) => this.setState({darkMode: isOn ? "section-dark" : ""});
 
+  download = async () => {
+    const response = await fetch('/arduino/compile?action=auto_loto&architecture=atmega16u2&day_to_skip=1')
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    // the filename you want
+    a.download = "auto_loto.hex";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
   render() {
     const { error, darkMode } = this.state;
     const showModal = error && error.length > 0;
@@ -116,13 +130,13 @@ class SectionButtons extends Component {
                   <div id="buttons">
                     <div className="title">
                       <h3>
-                        Download Arduino<br />
+                        AutoLoto<br />
                       </h3>
                     </div>
                       <Row>
                         <Col>
                           <Button color="success" type="button" onClick={() => this.download()}>
-                            Download AutoLoto (WIP)
+                            Download
                           </Button>
                         </Col>
                       </Row>
