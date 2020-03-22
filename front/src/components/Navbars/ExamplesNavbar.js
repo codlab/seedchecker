@@ -113,7 +113,7 @@ function ExamplesNavbar() {
             <NavItem>
               <NavLink
                 data-placement="bottom"
-                href="arduino"
+                href="bots"
                 title="Follow me on Twitter"
               >
                 <i className="fa fa-gamepad" />

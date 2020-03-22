@@ -20,7 +20,7 @@ darkMode(DarkMode.instance.state);
 ReactDOM.render(
   <BrowserRouter>
     <Switch>
-      <Route path="/arduino" render={props => <Arduino {...props} />} />
+      <Route path="/bots" render={props => <Arduino {...props} />} />
       <Route path="/" render={props => <Index {...props} />} />
       <Redirect to="/" />
     </Switch>
