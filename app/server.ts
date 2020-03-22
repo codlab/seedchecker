@@ -23,7 +23,7 @@ export default class ApiServer {
       console.log("server already listening");
       return false;
     }
-    const build_folder = path.join(__dirname, '../front/build');
+    const build_folder = path.join(__dirname, '../../front/build'); //with the inclusion of the Arduino descriptor, need "for now" to add ../..
     this.app = express();
   
     this.app
