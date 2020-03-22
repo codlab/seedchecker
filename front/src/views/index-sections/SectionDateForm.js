@@ -336,6 +336,20 @@ class SectionButtons extends Component {
     DuduMode.instance.removeListener("dudu_list", this.onDudus);
   }
 
+  download = async () => {
+    const response = await fetch('/arduino/compile?action=auto_loto&architecture=atmega16u2&day_to_skip=1')
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    // the filename you want
+    a.download = "auto_loto.hex";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
   flash = async () => {
     // connect to device using web serial API
     const serial = await openSerial()
