@@ -26,8 +26,8 @@ import {
   Row,
   Col
 } from "reactstrap";
-import DarkMode from "components/DarkMode";
-import DuduMode from "components/Dudu";
+import DarkMode from "../../components/DarkMode";
+import DuduMode from "../../components/Dudu";
 
 //from https://github.com/kaelhem/avrbro
 import avrbro from 'avrbro'
@@ -743,28 +743,6 @@ class SectionButtons extends Component {
                         }
                       </Col>
                     </Row>
-                  </Col>
-                </Row>
-              </Col>
-
-
-              <Col sm="12" md="6" lg="6">
-                <Row>
-                  <Col sm="12" md="12" lg="12">
-                  <div id="buttons">
-                    <div className="title">
-                      <h3>
-                        Flash Arduino<br />
-                      </h3>
-                    </div>
-                      <Row>
-                        <Col>
-                          <Button color="success" type="button" onClick={() => this.flash()}>
-                            Flash AutoLoto (WIP)
-                          </Button>
-                        </Col>
-                      </Row>
-                    </div>
                   </Col>
                 </Row>
               </Col>

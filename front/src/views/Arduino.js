@@ -1,9 +1,9 @@
 import React from "react";
 
-import SectionDateForm from "./index-sections/SectionDateForm.js";
+import SectionArduino from "./index-sections/SectionArduino.js";
 import ExamplesNavbar from "../components/Navbars/ExamplesNavbar";
 
-function Index() {
+function Arduino() {
   document.documentElement.classList.remove("nav-open");
   React.useEffect(() => {
     document.body.classList.add("index");
@@ -15,10 +15,10 @@ function Index() {
     <>
       <ExamplesNavbar />
       <div className="main">
-        <SectionDateForm />
+        <SectionArduino />
       </div>
     </>
   );
 }
 
-export default Index;
+export default Arduino;

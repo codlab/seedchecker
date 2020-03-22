@@ -2,8 +2,23 @@ import { Router, RequestHandler } from "express";
 import { v4 as uuidv4 } from 'uuid';
 import mkdir from "mkdir-promise";
 import copy from "recursive-copy";
-import { actionFrom, ArduinoActionMake } from "./ArduinoAction";
+import { actionFromHolder, ArduinoActionMake } from "../../front/src/arduino/ArduinoAction";
 const { spawn } = require('child_process');
+
+
+
+const actionFrom = (req: any): ArduinoActionMake|null => {
+    const body = req.body || {};
+    const query = req.query || {};
+
+    if(body && body.action) {
+        return actionFromHolder(body);
+    } else if(query && query.action) {
+        return actionFromHolder(query);
+    }
+
+    return null;
+}
 
 interface Result {
     output: string;

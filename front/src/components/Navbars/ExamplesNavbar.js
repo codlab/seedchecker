@@ -11,7 +11,7 @@ import {
   Nav,
   Container
 } from "reactstrap";
-import DarkMode from "components/DarkMode";
+import DarkMode from "../DarkMode";
 
 const DARK = [];
 DARK[true] = "navbar-dark";
@@ -80,7 +80,7 @@ function ExamplesNavbar() {
             title="Coded by Creative Tim"
             tag={Link}
           >
-            Shiny Seed Finder
+            Pokémon Tools
           </NavbarBrand>
           <button
             aria-expanded={navbarCollapse}
@@ -100,6 +100,38 @@ function ExamplesNavbar() {
           isOpen={navbarCollapse}
         >
           <Nav navbar>
+            <NavItem>
+              <NavLink
+                data-placement="bottom"
+                href="index"
+                title="Follow me on Twitter"
+              >
+                <i className="fa fa-star" />
+                Shiny and Dudu
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                data-placement="bottom"
+                href="arduino"
+                title="Follow me on Twitter"
+              >
+                <i className="fa fa-gamepad" />
+                Arduino
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                data-placement="bottom"
+                href="https://wiki.pokectr.com"
+                target="_blank"
+                title="Follow me on Twitter"
+              >
+                <i className="fa fa-book" />
+                Wiki
+              </NavLink>
+            </NavItem>
+
             <NavItem>
               <NavLink
                 data-placement="bottom"

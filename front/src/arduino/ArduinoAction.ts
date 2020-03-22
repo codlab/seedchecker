@@ -1,4 +1,4 @@
-import Arduino from "./arduino";
+import Arduino from "../../../app/server/arduino";
 import { Architectures } from "./Architectures";
 
 export interface ArduinoParamQuery {
@@ -71,23 +71,9 @@ function toNumber(value: any) {
     }
 }
 
-export const actionFrom = (req: any): ArduinoActionMake|null => {
-    const body = req.body || {};
-    const query = req.query || {};
-    var folder: string|null = null;
-    var architecture: string|null = null;
-    var holder = {};
-    if(body && body.action) {
-        folder = body.action;
-        architecture = body.architecture;
-        holder = body;
-    } else if(query && query.action) {
-        folder = query.action;
-        architecture = query.architecture;
-        holder = query;
-    } else {
-        return null;
-    }
+export const actionFromHolder = (holder: any): ArduinoActionMake|null => {
+    const folder = holder.action;
+    const architecture = holder.architecture;
 
     if(!architecture || !Architectures.find(a => a === architecture)) {
         return null;
