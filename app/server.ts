@@ -24,14 +24,17 @@ export default class ApiServer {
       return false;
     }
     const build_folder = path.join(__dirname, '../../front/build'); //with the inclusion of the Arduino descriptor, need "for now" to add ../..
+    const pub: any = (req: any, res: any) => res.status(200).sendFile(path.join(build_folder, 'index.html'));
+
     this.app = express();
-  
+
     this.app
     .use(cors())
     .use(express.static(build_folder))
     .use(body_parser.json())
     .use("/arduino", new Arduino().router)
-    .get("/bots", (req: any, res: any) => res.status(200).sendFile(path.join(build_folder, 'index.html')) );
+    .get("/index", pub )
+    .get("/bots", pub);
 
     const { key, cert, ca } = config;
 
