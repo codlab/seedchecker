@@ -23,14 +23,16 @@ export default class ApiServer {
       console.log("server already listening");
       return false;
     }
+    const build_folder = path.join(__dirname, '../front/build');
     this.app = express();
   
     this.app
     .use(cors())
-    .use(express.static(path.join(__dirname, '../front/build')))
+    .use(express.static(build_folder))
     .use(body_parser.json())
-    .use("/arduino", new Arduino().router);
-  
+    .use("/arduino", new Arduino().router)
+    .get("/bots", (req: any, res: any) => res.status(200).sendFile(path.join(build_folder, 'index.html')) );
+
     const { key, cert, ca } = config;
 
     if(key && cert && ca) {
