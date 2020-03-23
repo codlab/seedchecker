@@ -1,4 +1,3 @@
-import Arduino from "../../../app/server/arduino";
 import { Architectures } from "./Architectures";
 
 export interface ArduinoParamQuery {
