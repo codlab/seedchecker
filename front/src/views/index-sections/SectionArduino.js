@@ -28,6 +28,8 @@ import {
 } from "reactstrap";
 import DarkMode from "../../components/DarkMode";
 import DuduMode from "../../components/Dudu";
+import { ArduinoActions } from "../../arduino/ArduinoAction";
+import ArduinoActionComponent from "./ArduinoActionComponent";
 
 class SectionButtons extends Component {
 
@@ -124,26 +126,7 @@ class SectionButtons extends Component {
               </Col>
             </Row>
             <Row>
-              <Col sm="12" md="6" lg="6">
-                <Row>
-                  <Col sm="12" md="12" lg="12">
-                  <div id="buttons">
-                    <div className="title">
-                      <h3>
-                        AutoLoto<br />
-                      </h3>
-                    </div>
-                      <Row>
-                        <Col>
-                          <Button color="success" type="button" onClick={() => this.download()}>
-                            Download
-                          </Button>
-                        </Col>
-                      </Row>
-                    </div>
-                  </Col>
-                </Row>
-              </Col>
+              { ArduinoActions.map(action => (<ArduinoActionComponent action={action} />)) }
             </Row>
           </Container>
         </div>
