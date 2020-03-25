@@ -29,45 +29,41 @@ import {
 import DarkMode from "../../components/DarkMode";
 import DuduMode from "../../components/Dudu";
 import { ArduinoActions, ArduinoAction } from "../../arduino/ArduinoAction";
+import { t } from "../../arduino/ArduinoTranslations";
 
 export interface ArduinoActionProps {
-  action: ArduinoAction
+  action: ArduinoAction,
+  architecture: string
 }
 
 export default class ArduinoActionComponent extends Component<ArduinoActionProps> {
 
+  _holder: Map<string, string> = new Map();
+
   constructor(props: ArduinoActionProps) {
     super(props);
-    const isOn = DarkMode.instance.state;
     this.state = { };
-  }
 
-  componentDidMount() {
-    DarkMode.instance.addListener("dark_mode", this.onDarkMode);
+    (this.props.action.params || []).forEach(param => this._holder.set(param.name, ""+param.min || "0") );
   }
-
-  componentWillUnmount() {
-    DarkMode.instance.removeListener("dark_mode", this.onDarkMode);
-  }
-
-  onDarkMode = (isOn: boolean) => this.setState({darkMode: isOn ? "section-dark" : ""});
 
   download = async () => {
-    const response = await fetch('/arduino/compile?action=auto_loto&architecture=atmega16u2&day_to_skip=1')
+    const { action, architecture } = this.props;
+    const params = (this.props.action.params || []).map(param => param.name+"="+(this._holder.get(param.name) || "0") );
+
+    const endpoint = `/arduino/compile?action=x&architecture=${architecture}&${params.join('&')}`;
+    const response = await fetch(endpoint);
+
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
-    // the filename you want
-    a.download = "auto_loto.hex";
+
+    a.download = `${action}.hex`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
-  }
-
-  private setParam(name: string, value: number) {
-    console.log(`${name} := ${value}`);
   }
 
   render() {
@@ -75,38 +71,39 @@ export default class ArduinoActionComponent extends Component<ArduinoActionProps
 
     return (
       <Col sm="12" md="4" lg="4">
-        <Row>
-          <Col sm="12" md="12" lg="12">
-          <div id="buttons">
-            <div className="title">
-              <h3>
-                {action.folder} <br />
-              </h3>
-            </div>
-              <Row>
-                {
-                    (action.params || []).map(param => {
-                      const { name } = param;
-                      return (
-                        <Col sm="12">
-                          <FormGroup>
-                            <div>
-                              <p><span className="note">{param.name}</span></p>
-                            </div>
-                            <Input defaultValue={0} type="number" min={-1} max={25500000} onChange={event => this.setParam(name, parseInt(event.target.value))}/>
-                          </FormGroup>
-                        </Col>);
-                    })
-                  }
-                <Col>
-                  <Button color="success" type="button" onClick={() => this.download()}>
-                    Download
-                  </Button>
-                </Col>
-              </Row>
-            </div>
-          </Col>
-        </Row>
+        <div id="buttons">
+          <div className="title">
+            <h3>
+              {t(action.folder)} <br />
+            </h3>
+          </div>
+          <Row>
+            { (action.params || []).map(param => {
+                const { name } = param;
+                return (
+                  <Col sm="4">
+                    <FormGroup>
+                      <div>
+                        <p><span className="note">{t(param.name)}</span></p>
+                      </div>
+                      {
+                        (param.type && param.type == "boolean") ?
+                        <Input type="select" name="select" id="pokemon_filter" onChange={event => this._holder.set(name, event.target.value)}>
+                          <option value="0">false</option><option value="1">true</option>
+                        </Input>
+                        : <Input defaultValue={param.min || 0} type="number" min={param.min || 0} max={param.max || 25500000} onChange={event => this._holder.set(name, event.target.value)}/>
+                      }
+                    </FormGroup>
+                  </Col>);
+              })
+            }
+            <Col sm="12">
+              <Button color="success" type="button" onClick={() => this.download()}>
+                Download
+              </Button>
+            </Col>
+          </Row>
+        </div>
       </Col>
     );
   }
