@@ -262,18 +262,14 @@ class SectionButtons extends Component {
     }
   }
 
-  loadEvent(game, name) {
+  loadEvent(name) {
     return this.dataProvider.load_event(name)
-    .then(events => events.filter(event => {
-      console.log("matching game ?", event.game+" "+game)
-      return event.game == game
-    }))
     .then(events => events.map(event => ({...event, name}) ));
   }
 
-  loadEvents(game) {
+  loadEvents() {
     return this.dataProvider.load_events()
-    .then(events => Promise.all(events.map(event => this.loadEvent(game, event))))
+    .then(events => Promise.all(events.map(event => this.loadEvent(event))))
     .then(events => events.flat())
   }
 
@@ -283,7 +279,7 @@ class SectionButtons extends Component {
 
     return Promise.all([
       this.dataProvider.load_nests(),
-      this.loadEvents(filter_game)
+      this.loadEvents()
     ])
     .then(([loaded_nests, loaded_events]) => {
       this.cached_data = {loaded_nests, loaded_events};
@@ -311,7 +307,8 @@ class SectionButtons extends Component {
       }
 
       if(loaded_events) {
-        loaded_events.forEach(({name, pokemons}) => {
+        loaded_events.filter(({game}) == filter_game === game)
+        .forEach(({name, pokemons}) => {
           pokemons.filter(p => p.species() == pokemonIndex).forEach(pokemon => found_dens.push({name, pokemon}));
         });
       }
@@ -350,11 +347,12 @@ class SectionButtons extends Component {
 
     this.loadDenData()
     .then(({loaded_nests, loaded_events}) => {
+      console.log("before", {loaded_nests, loaded_events});
       const from_dens = [
         ...loaded_nests.map(({pokemons}) => pokemons),
         ...loaded_events.map(({pokemons}) => pokemons)
       ];
-     console.log({from_dens});
+     console.log("after", {from_dens});
     });
   }
 
