@@ -61,14 +61,12 @@ const openSerialDup = async (options = {}) => {
   index: number
 }*/
 
-const pokemons/*: Pokemon*/ = names.map((name, index) => ({name, index}));
-
 const ROW_TYPE = ["-", "⭐", "◇", "👉"];
 const NATURES = [ "Bashful", "Docile", "Hardy", "Serious", "Quirky", "Bold", "Modest", "Calm", "Timid", "Lonely", "Mild", "Gentle", "Hasty", "Adamant", "Impish", "Careful", "Jolly", "Naughty", "Lax", "Rash", "Naive", "Brave", "Relaxed", "Quiet", "Sassy" ];
 
 const {locations} = Configs.data;
 const { nests, names } = Configs;
-console.log(nests);
+const pokemons/*: Pokemon*/ = names.map((name, index) => ({name, index}));
 
 const den_names = []; //Map?
 nests.forEach(nest => {
