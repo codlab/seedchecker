@@ -307,7 +307,7 @@ class SectionButtons extends Component {
       }
 
       if(loaded_events) {
-        loaded_events.filter(({game}) == filter_game === game)
+        loaded_events.filter(({game}) => filter_game === game)
         .forEach(({name, pokemons}) => {
           pokemons.filter(p => p.species() == pokemonIndex).forEach(pokemon => found_dens.push({name, pokemon}));
         });
