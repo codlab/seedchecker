@@ -66,7 +66,7 @@ const NATURES = [ "Bashful", "Docile", "Hardy", "Serious", "Quirky", "Bold", "Mo
 
 const {locations} = Configs.data;
 const { nests, names } = Configs;
-const pokemons/*: Pokemon*/ = names.map((name, index) => ({name, index}));
+const pokemons/*: Pokemon*/ = names.map((name, index) => ({name, index})).filter((data, index) => index > 0);
 
 const den_names = []; //Map?
 nests.forEach(nest => {
@@ -273,7 +273,7 @@ class SectionButtons extends Component {
 
   cached_data = undefined;
   loadDenData() {
-    if(this.cached_data) return this.cached_data;
+    if(this.cached_data) return Promise.resolve(this.cached_data);
 
     return Promise.all([
       this.dataProvider.load_nests(),
