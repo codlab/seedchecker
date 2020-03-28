@@ -28,6 +28,10 @@ import {
 } from "reactstrap";
 import DarkMode from "../../components/DarkMode";
 import DuduMode from "../../components/Dudu";
+import { ArduinoActions } from "../../arduino/ArduinoAction";
+import ArduinoActionComponent from "./ArduinoActionComponent";
+import { Architectures } from "../../arduino/Architectures";
+import { t } from "../../arduino/ArduinoTranslations";
 
 class SectionButtons extends Component {
 
@@ -48,11 +52,14 @@ class SectionButtons extends Component {
       pokemonIndex: undefined,
       filter_game: Game.SWORD,
       found_dens: [],
-      use_den_conf: undefined
+      use_den_conf: undefined,
+      architecture: Architectures[0]
     };
 
     this.dataProvider = new OnlineDataProvider();
   }
+
+  setArchitecture = (architecture) => this.setState({architecture});
 
   componentDidMount() {
     DarkMode.instance.addListener("dark_mode", this.onDarkMode);
@@ -64,22 +71,8 @@ class SectionButtons extends Component {
 
   onDarkMode = (isOn) => this.setState({darkMode: isOn ? "section-dark" : ""});
 
-  download = async () => {
-    const response = await fetch('/arduino/compile?action=auto_loto&architecture=atmega16u2&day_to_skip=1')
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    // the filename you want
-    a.download = "auto_loto.hex";
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-  }
-
   render() {
-    const { error, darkMode } = this.state;
+    const { error, darkMode, architecture } = this.state;
     const showModal = error && error.length > 0;
 
     console.log("footer", showModal);
@@ -124,26 +117,27 @@ class SectionButtons extends Component {
               </Col>
             </Row>
             <Row>
-              <Col sm="12" md="6" lg="6">
-                <Row>
-                  <Col sm="12" md="12" lg="12">
-                  <div id="buttons">
-                    <div className="title">
-                      <h3>
-                        AutoLoto<br />
-                      </h3>
-                    </div>
-                      <Row>
-                        <Col>
-                          <Button color="success" type="button" onClick={() => this.download()}>
-                            Download
-                          </Button>
-                        </Col>
-                      </Row>
-                    </div>
-                  </Col>
-                </Row>
+              <Col sm="12" md="12" lg="12">
+                <div id="buttons">
+                  <div className="title">
+                    <h3>Configuration<br /></h3>
+                  </div>
+                  <Row>
+                    <Col sm="12" md="3" lg="3">
+                      <FormGroup>
+                        <div id="filter_title">
+                          <p><span className="note">Architecture</span></p>
+                        </div>
+                        <Input type="select" name="architecture" id="architecture" onChange={event => this.setArchitecture(Architectures[event.target.selectedIndex])}>
+                          { Architectures.map(arch => <option>{t(arch)}</option>) }
+                        </Input>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                </div>
               </Col>
+              
+              { ArduinoActions.map(action => (<ArduinoActionComponent architecture={architecture} action={action} />)) }
             </Row>
           </Container>
         </div>

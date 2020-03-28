@@ -2,7 +2,10 @@ import { Architectures } from "./Architectures";
 
 export interface ArduinoParamQuery {
     name: string,
-    make_param: string
+    make_param: string,
+    type?: "boolean",
+    min?: number,
+    max?: number
 }
 
 export interface ArduinoParam {
@@ -28,30 +31,50 @@ export const ArduinoActions: ArduinoAction[] = [
     {folder: "all", name: "MultiBot"},
     {folder: "auto_3day_skipper", name: "Auto3DaySkipper"},
     {folder: "auto_fossil", name: "AutoFossil", params: [
-        { name: "fist_fossil_top_slot", make_param: "FIRST_FOSSIL_TOP_SLOT"},
-        { name: "second_fossil_top_slot", make_param: "SECOND_FOSSIL_TOP_SLOT"},
-        { name: "time_before_sr", make_param: "TIME_BEFORE_SR"},
-        { name: "auto_soft_reset", make_param: "AUTO_SOFT_RESET"}
+        { name: "first_fossil_top_slot", make_param: "FIRST_FOSSIL_TOP_SLOT", type: "boolean", min: 0, max: 1},
+        { name: "second_fossil_top_slot", make_param: "SECOND_FOSSIL_TOP_SLOT", type: "boolean", min: 0, max: 1},
+        { name: "time_before_sr", make_param: "TIME_BEFORE_SR", min: 1},
+        { name: "auto_soft_reset", make_param: "AUTO_SOFT_RESET", type: "boolean", min: 0, max: 1}
     ]},
-    {folder: "auto_host", name: "AutoHost"}, //TODO
+    {folder: "auto_host", name: "AutoHost", params: [
+        { name: "use_link_code", make_param: "USE_LINK_CODE", type: "boolean", min: 0, max: 1},
+        { name: "use_random_code", make_param: "USE_RANDOM_CODE", type: "boolean", min: 0, max: 1},
+        { name: "initial_rand_seed", make_param: "INITIAL_RAND_SEED", min: 1},
+        { name: "link_code", make_param: "LINK_CODE", min: 0, max: 9999}
+    ]},
     {folder: "auto_loto", name: "AutoLoto", params: [
         { name: "day_to_skip", make_param: "DAY_TO_SKIP"}
     ]},
     {folder: "berry_farmer", name: "BerryFarmer"},
     {folder: "box_release", name: "BoxRelease", params: [
-        { name: "box_count", make_param: "BOX_COUNT"}
+        { name: "box_count", make_param: "BOX_COUNT", min: 1}
     ]},
-    {folder: "day_skipper_eu", name: "DaySkipper_EU"}, //TODO
+    {folder: "day_skipper_eu", name: "DaySkipper_EU", params: [
+        { name: "day", make_param: "DAY", min: 1, max: 31},
+        { name: "month", make_param: "MONTH", min: 1, max: 12},
+        { name: "year", make_param: "YEAR", min: 2000, max: 2066},
+        { name: "day_to_skip", make_param: "DAY_TO_SKIP", min: 1}
+    ]},
     {folder: "day_skipper_eu_nolimit", name: "DaySkipper_EU_NoLimit", params: [
-        { name: "day_to_skip", make_param: "DAY_TO_SKIP"}
+        { name: "day_to_skip", make_param: "DAY_TO_SKIP", min: 1}
     ]},
-    {folder: "day_skipper_jp", name: "DaySkipper_JP"}, //TODO
+    {folder: "day_skipper_jp", name: "DaySkipper_JP", params: [
+        { name: "day", make_param: "DAY", min: 1, max: 31},
+        { name: "month", make_param: "MONTH", min: 1, max: 12},
+        { name: "year", make_param: "YEAR", min: 2000, max: 2066},
+        { name: "day_to_skip", make_param: "DAY_TO_SKIP", min: 1}
+    ]},
     {folder: "day_skipper_jp_nolimit", name: "DaySkipper_JP_NoLimit", params: [
-        { name: "day_to_skip", make_param: "DAY_TO_SKIP"}
+        { name: "day_to_skip", make_param: "DAY_TO_SKIP", min: 1}
     ]},
-    {folder: "day_skipper_us", name: "DaySkipper_US"}, //TODO
+    {folder: "day_skipper_us", name: "DaySkipper_US", params: [
+        { name: "day", make_param: "DAY", min: 1, max: 31},
+        { name: "month", make_param: "MONTH", min: 1, max: 12},
+        { name: "year", make_param: "YEAR", min: 2000, max: 2066},
+        { name: "day_to_skip", make_param: "DAY_TO_SKIP", min: 1}
+    ]},
     {folder: "day_skipper_us_nolimit", name: "DaySkipper_US_NoLimit", params: [
-        { name: "day_to_skip", make_param: "DAY_TO_SKIP"}
+        { name: "day_to_skip", make_param: "DAY_TO_SKIP", min: 1}
     ]},
     {folder: "day_skippers", name: "DaySkippers"}, //TODO
     {folder: "turbo_a", name: "TurboA"},

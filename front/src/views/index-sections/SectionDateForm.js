@@ -56,12 +56,17 @@ const openSerialDup = async (options = {}) => {
   return null
 }
 
+/*interface Pokemon {
+  name: string,
+  index: number
+}*/
+
 const ROW_TYPE = ["-", "⭐", "◇", "👉"];
 const NATURES = [ "Bashful", "Docile", "Hardy", "Serious", "Quirky", "Bold", "Modest", "Calm", "Timid", "Lonely", "Mild", "Gentle", "Hasty", "Adamant", "Impish", "Careful", "Jolly", "Naughty", "Lax", "Rash", "Naive", "Brave", "Relaxed", "Quiet", "Sassy" ];
 
 const {locations} = Configs.data;
 const { nests, names } = Configs;
-console.log(nests);
+const pokemons/*: Pokemon*/ = names.map((name, index) => ({name, index}));
 
 const den_names = []; //Map?
 nests.forEach(nest => {
@@ -104,7 +109,8 @@ class SectionButtons extends Component {
       pokemonIndex: undefined,
       filter_game: Game.SWORD,
       found_dens: [],
-      use_den_conf: undefined
+      use_den_conf: undefined,
+      pokemons: pokemons
     };
 
     this.dataProvider = new OnlineDataProvider();
@@ -254,19 +260,29 @@ class SectionButtons extends Component {
     }
   }
 
-  loadEvent(game, name) {
+  loadEvent(name) {
     return this.dataProvider.load_event(name)
-    .then(events => events.filter(event => {
-      console.log("matching game ?", event.game+" "+game)
-      return event.game == game
-    }))
     .then(events => events.map(event => ({...event, name}) ));
   }
 
-  loadEvents(game) {
+  loadEvents() {
     return this.dataProvider.load_events()
-    .then(events => Promise.all(events.map(event => this.loadEvent(game, event))))
+    .then(events => Promise.all(events.map(event => this.loadEvent(event))))
     .then(events => events.flat())
+  }
+
+  cached_data = undefined;
+  loadDenData() {
+    if(this.cached_data) return Promise.resolve(this.cached_data);
+
+    return Promise.all([
+      this.dataProvider.load_nests(),
+      this.loadEvents()
+    ])
+    .then(([loaded_nests, loaded_events]) => {
+      this.cached_data = {loaded_nests, loaded_events};
+      return this.cached_data;
+    });
   }
 
   _setFilterAndMon(show_extend, pokemonIndex, filter_game) {
@@ -274,11 +290,8 @@ class SectionButtons extends Component {
     this.setState({show_extend, pokemonIndex,filter_game});
     if(!show_extend && !isHA) return;
 
-    Promise.all([
-      this.dataProvider.load_nests(),
-      this.loadEvents(filter_game)
-    ])
-    .then(([loaded_nests, loaded_events]) => {
+    this.loadDenData()
+    .then(({loaded_nests, loaded_events}) => {
 
       var found_dens = [];
       const list = loaded_nests.find(({game}) => game == filter_game)
@@ -292,7 +305,8 @@ class SectionButtons extends Component {
       }
 
       if(loaded_events) {
-        loaded_events.forEach(({name, pokemons}) => {
+        loaded_events.filter(({game}) => filter_game === game)
+        .forEach(({name, pokemons}) => {
           pokemons.filter(p => p.species() == pokemonIndex).forEach(pokemon => found_dens.push({name, pokemon}));
         });
       }
@@ -328,9 +342,26 @@ class SectionButtons extends Component {
     DarkMode.instance.addListener("dark_mode", this.onDarkMode);
     DuduMode.instance.addListener("dudu", this.onDuduMode);
     DuduMode.instance.addListener("dudu_list", this.onDudus);
+    this.mounted = true;
+
+    this.loadDenData()
+    .then(({loaded_nests, loaded_events}) => {
+      const found = pokemons.map(pokemon => false);
+      const mapped_1 = loaded_nests.map(({nests}) => nests).flat().map(({pokemons}) => pokemons).flat();
+      const mapped_2 = loaded_events.map(({pokemons}) => pokemons).flat();
+
+      const from_dens = [ ...mapped_1, ...mapped_2 ];
+      from_dens.forEach(entry => found[entry.species()] = true);
+
+      const isIn = (pokemon) => from_dens.find(in_array => !!found[pokemon.index]);
+
+      const filtered = pokemons.filter(pokemon => isIn(pokemon));
+      this.mounted && this.setState({pokemons: filtered});
+    });
   }
 
   componentWillUnmount() {
+    this.mounted = false;
     DarkMode.instance.removeListener("dark_mode", this.onDarkMode);
     DuduMode.instance.removeListener("dudu", this.onDuduMode);
     DuduMode.instance.removeListener("dudu_list", this.onDudus);
@@ -398,7 +429,7 @@ class SectionButtons extends Component {
   }
 
   render() {
-    const {found_dens, show_extend, isHA, dudus, isDuduMode, darkMode, results, error, progressStep, progressLimit} = this.state;
+    const {pokemons, found_dens, show_extend, isHA, dudus, isDuduMode, darkMode, results, error, progressStep, progressLimit} = this.state;
     const showModal = error && error.length > 0;
 
     console.log("footer", showModal);
@@ -505,10 +536,8 @@ class SectionButtons extends Component {
                         </Col>
                         <Col sm="12" md="6" lg="6">
                           <FormGroup>
-                            <Input type="select" name="select" onChange={event => this.filterPokemonIndex(event.target.selectedIndex + 1)}>
-                              {
-                                names.filter((name, i) => i > 0).map((name, index) => <option value={index+1}>{`#${index+1} ${name}`}</option> )
-                              }
+                            <Input type="select" name="select" onChange={event => this.filterPokemonIndex(parseInt(event.target.value))}>
+                              { pokemons.map(({name, index}) => <option value={index}>{`#${index} ${name}`}</option> ) }
                             </Input>
                           </FormGroup>
                         </Col>
