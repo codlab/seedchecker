@@ -66,7 +66,7 @@ const NATURES = [ "Bashful", "Docile", "Hardy", "Serious", "Quirky", "Bold", "Mo
 
 const {locations} = Configs.data;
 const { nests, names } = Configs;
-const pokemons/*: Pokemon*/ = names.map((name, index) => ({name, index})).filter((data, index) => index > 0);
+const pokemons/*: Pokemon*/ = names.map((name, index) => ({name, index}));
 
 const den_names = []; //Map?
 nests.forEach(nest => {
@@ -342,19 +342,26 @@ class SectionButtons extends Component {
     DarkMode.instance.addListener("dark_mode", this.onDarkMode);
     DuduMode.instance.addListener("dudu", this.onDuduMode);
     DuduMode.instance.addListener("dudu_list", this.onDudus);
+    this.mounted = true;
 
     this.loadDenData()
     .then(({loaded_nests, loaded_events}) => {
-      console.log("before", {loaded_nests, loaded_events});
-      const from_dens = [
-        ...loaded_nests.map(({pokemons}) => pokemons),
-        ...loaded_events.map(({pokemons}) => pokemons)
-      ];
-     console.log("after", {from_dens});
+      const found = pokemons.map(pokemon => false);
+      const mapped_1 = loaded_nests.map(({nests}) => nests).flat().map(({pokemons}) => pokemons).flat();
+      const mapped_2 = loaded_events.map(({pokemons}) => pokemons).flat();
+
+      const from_dens = [ ...mapped_1, ...mapped_2 ];
+      from_dens.forEach(entry => found[entry.species()] = true);
+
+      const isIn = (pokemon) => from_dens.find(in_array => !!found[pokemon.index]);
+
+      const filtered = pokemons.filter(pokemon => isIn(pokemon));
+      this.mounted && this.setState({pokemons: filtered});
     });
   }
 
   componentWillUnmount() {
+    this.mounted = false;
     DarkMode.instance.removeListener("dark_mode", this.onDarkMode);
     DuduMode.instance.removeListener("dudu", this.onDuduMode);
     DuduMode.instance.removeListener("dudu_list", this.onDudus);
