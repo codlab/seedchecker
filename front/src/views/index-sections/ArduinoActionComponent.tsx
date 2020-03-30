@@ -60,7 +60,7 @@ export default class ArduinoActionComponent extends Component<ArduinoActionProps
     a.style.display = 'none';
     a.href = url;
 
-    a.download = `${action}.hex`;
+    a.download = `${action.folder}.hex`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
