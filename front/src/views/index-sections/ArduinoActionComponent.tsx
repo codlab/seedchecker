@@ -51,7 +51,7 @@ export default class ArduinoActionComponent extends Component<ArduinoActionProps
     const { action, architecture } = this.props;
     const params = (this.props.action.params || []).map(param => param.name+"="+(this._holder.get(param.name) || "0") );
 
-    const endpoint = `/arduino/compile?action=${action}&architecture=${architecture}&${params.join('&')}`;
+    const endpoint = `/arduino/compile?action=${action.folder}&architecture=${architecture}&${params.join('&')}`;
     const response = await fetch(endpoint);
 
     const blob = await response.blob();
