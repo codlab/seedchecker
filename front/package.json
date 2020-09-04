@@ -13,7 +13,7 @@
     "eventemitter2": "^6.0.0",
     "libseedchecker": "^1.8.0",
     "moment": "^2.24.0",
-    "node-sass": "4.12.0",
+    "node-sass": "4.14.1",
     "nouislider": "13.1.5",
     "react": "16.8.6",
     "react-bootstrap-switch": "15.5.3",
